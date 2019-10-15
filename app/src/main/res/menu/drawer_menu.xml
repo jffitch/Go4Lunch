@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tools:menu xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            tools:showIn="navigation_view">
+    <item android:title="">
+        <menu>
+            <item android:id="@+id/your_lunch"
+                  android:title="@string/your_lunch"
+                  android:icon="@drawable/your_lunch" />
+            <item android:id="@+id/settings"
+                  android:title="@string/settings"
+                  android:icon="@drawable/settings" />
+            <item android:id="@+id/login"
+                  android:title="@string/logout"
+                  android:icon="@drawable/logout" />
+        </menu>
+    </item>
+</tools:menu>

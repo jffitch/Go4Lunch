@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/nav_graph"
+            app:startDestination="@id/map_view">
+    <fragment android:id="@+id/map_view"
+              android:name="com.mathgeniusguide.project8.fragments.MapView"
+              android:label="@string/map_view"
+              tools:layout="@layout/map_view">
+        <action android:id="@+id/load_page_from_map"
+                app:destination="@id/restaurant_page"
+                app:enterAnim="@anim/push_left_in"
+                app:exitAnim="@anim/push_left_out" />
+    </fragment>
+    <fragment android:id="@+id/list_view"
+              android:name="com.mathgeniusguide.project8.fragments.ListView"
+              android:label="@string/list_view"
+              tools:layout="@layout/list_view">
+        <action android:id="@+id/load_page_from_map"
+                app:destination="@id/restaurant_page"
+                app:enterAnim="@anim/push_left_in"
+                app:exitAnim="@anim/push_left_out" />
+    </fragment>
+    <fragment android:id="@+id/workmates"
+              android:name="com.mathgeniusguide.project8.fragments.Workmates"
+              android:label="@string/workmates"
+              tools:layout="@layout/workmates">
+    </fragment>
+    <fragment android:id="@+id/login"
+              android:name="com.mathgeniusguide.project8.fragments.Login"
+              android:label="@string/login"
+              tools:layout="@layout/login">
+        <action android:id="@+id/action_login"
+                app:destination="@id/map_view"
+                app:enterAnim="@anim/push_left_in"
+                app:exitAnim="@anim/push_left_out" />
+    </fragment>
+    <fragment android:id="@+id/restaurant_page"
+              android:name="com.mathgeniusguide.project8.fragments.RestaurantPage"
+              android:label="@string/restaurant_page"
+              tools:layout="@layout/restaurant_page">
+    </fragment>
+</navigation>

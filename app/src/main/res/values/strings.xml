@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Go4Lunch</string>
+
+    <string name="logout">Logout</string>
+	<string name="settings">Settings</string>
+	<string name="your_lunch">Your Lunch</string>
+	<string name="list_view">List View</string>
+	<string name="login">login</string>
+	<string name="map_view">Map View</string>
+	<string name="restaurant_page">Restaurant Page</string>
+	<string name="search">Search</string>
+	<string name="workmates">Workmates</string>
+
+	<string name="navigation_drawer_open">Drawer Open</string>
+	<string name="navigation_drawer_close">Drawer Close</string>
+</resources>
