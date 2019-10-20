@@ -10,7 +10,7 @@
             <item android:id="@+id/settings"
                   android:title="@string/settings"
                   android:icon="@drawable/settings" />
-            <item android:id="@+id/login"
+            <item android:id="@+id/logout"
                   android:title="@string/logout"
                   android:icon="@drawable/logout" />
         </menu>
