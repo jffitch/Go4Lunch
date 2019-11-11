@@ -8,6 +8,11 @@
             <LayoutPositions>
               <option name="myPositions">
                 <map>
+                  <entry key="action_logout">
+                    <value>
+                      <LayoutPositions />
+                    </value>
+                  </entry>
                   <entry key="list_view">
                     <value>
                       <LayoutPositions>

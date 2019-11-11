@@ -85,6 +85,9 @@ class Login : Fragment() {
                     ).show()
                 } else {
                     findNavController().navigate(R.id.action_login)
+                    (activity as MainActivity).findViewById<View>(R.id.drawer_view).visibility = View.VISIBLE
+                    (activity as MainActivity).findViewById<View>(R.id.tabs).visibility = View.VISIBLE
+                    (activity as MainActivity).findViewById<View>(R.id.toolbar).visibility = View.VISIBLE
                 }
             })
     }

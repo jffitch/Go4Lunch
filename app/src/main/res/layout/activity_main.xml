@@ -20,7 +20,8 @@
                 android:background="@color/colorPrimary"
                 android:elevation="4dp"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                android:visibility="gone" />
 
         <fragment
                 android:name="androidx.navigation.fragment.NavHostFragment"
@@ -42,7 +43,8 @@
                 android:background="#c0c0c0"
                 app:itemTextColor="#000000"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:menu="@menu/tabs_menu"/>
+                app:menu="@menu/tabs_menu"
+                android:visibility="gone" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
@@ -51,6 +53,7 @@
             android:id="@+id/drawer_view"
             app:headerLayout="@layout/drawer_header"
             app:menu="@menu/drawer_menu"
-            android:layout_gravity="start"/>
+            android:layout_gravity="start"
+            android:visibility="gone" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
