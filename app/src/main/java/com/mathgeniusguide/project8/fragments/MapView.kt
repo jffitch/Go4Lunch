@@ -62,7 +62,7 @@ class MapView: Fragment(), OnMapReadyCallback {
         if (googleMap != null) {
             val coord = LatLng(lat, long)
             googleMap!!.mapType = GoogleMap.MAP_TYPE_NORMAL
-            googleMap!!.addMarker(MarkerOptions().position(coord).title("Test"))
+            googleMap!!.addMarker(MarkerOptions().position(coord).title(resources.getString(R.string.you_are_here)))
             val pos = CameraPosition.builder().target(coord).zoom(16.toFloat()).bearing(0.toFloat()).tilt(45.toFloat()).build()
             googleMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
         }
