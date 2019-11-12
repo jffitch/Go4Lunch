@@ -1,4 +1,4 @@
-package com.mathgeniusguide.project8.responses
+package com.mathgeniusguide.project8.responses.place
 
 data class PlacePhoto(
     val height: Int,

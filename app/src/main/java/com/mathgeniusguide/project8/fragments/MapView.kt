@@ -10,6 +10,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -50,17 +51,27 @@ class MapView: Fragment(), OnMapReadyCallback {
                 setLocation(latitude, longitude)
             }
         })
+        (activity as MainActivity).placeList.observe(viewLifecycleOwner, Observer {
+            var coord: LatLng? = null
+            var title = ""
+            var pos: CameraPosition? = null
+            for (place in it) {
+                coord = LatLng(place.latitude, place.longitude)
+                title = place.name
+                googleMap!!.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.your_lunch))
+                    .position(coord).title(title))
+            }
+        })
     }
 
     override fun onMapReady(p0: GoogleMap?) {
         MapsInitializer.initialize(context)
         googleMap = p0
-        setLocation(0.0, 0.0)
     }
 
-    fun setLocation(lat: Double, long: Double) {
-        if (googleMap != null) {
-            val coord = LatLng(lat, long)
+    fun setLocation(lat: Double, lng: Double) {
+        if (googleMap != null && lat != 91.0 && lng != 181.0) {
+            val coord = LatLng(lat, lng)
             googleMap!!.mapType = GoogleMap.MAP_TYPE_NORMAL
             googleMap!!.addMarker(MarkerOptions().position(coord).title(resources.getString(R.string.you_are_here)))
             val pos = CameraPosition.builder().target(coord).zoom(16.toFloat()).bearing(0.toFloat()).tilt(45.toFloat()).build()

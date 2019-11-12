@@ -33,14 +33,22 @@ import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.mathgeniusguide.project8.responses.NearbyPlace
+import com.mathgeniusguide.project8.viewmodel.MyViewModel
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
+    val viewModel by lazy { ViewModelProviders.of(this).get(MyViewModel::class.java)}
     lateinit var navController: NavController
     private val TAG = "Go4Lunch"
     private val RC_SIGN_IN = 9001
     private val ANONYMOUS = "anonymous"
     lateinit var locationManager: LocationManager
+    val placeList = MutableLiveData<ArrayList<NearbyPlace>>()
+    var nearbyPlace: NearbyPlace? = null
+    var fetched = false
 
     // Firebase variables
     lateinit var googleApiClient: GoogleApiClient
@@ -135,6 +143,47 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     override fun onLocationChanged(location: Location?) {
         latitude.postValue(location?.latitude ?: 91.0)
         longitude.postValue(location?.longitude ?: 181.0)
+        if (location != null && latitude.value != 91.0 && longitude.value != 181.0 && !fetched) {
+            getNearbyPlaces(location.latitude, location.longitude)
+            fetched = true
+        }
+    }
+
+    fun getNearbyPlaces(lat: Double, lng: Double) {
+        // fetch places from API
+        viewModel.fetchPlaces(lat, lng)
+        viewModel.places?.observe(this, Observer {
+            if (it != null) {
+                // for each place, use the place_id to fetch details about that place
+                for (place in it.results) {
+                    viewModel.fetchDetails(place.place_id)
+                    viewModel.details?.observe(this, Observer {details ->
+                        // put values in a nearbyPlace object, then add to placeList
+                        // placeList will be observed by MapView and ListView fragments
+                        if (details != null) {
+                            nearbyPlace = NearbyPlace()
+                            val r = details.result
+                            nearbyPlace!!.id = place.place_id
+                            nearbyPlace!!.address = r.formatted_address
+                            nearbyPlace!!.phone = r.formatted_phone_number
+                            nearbyPlace!!.latitude = place.geometry.location.lat
+                            nearbyPlace!!.longitude = place.geometry.location.lng
+                            nearbyPlace!!.distance = coordinateDistance(lat, lng, nearbyPlace!!.latitude, nearbyPlace!!.longitude)
+                            nearbyPlace!!.website = r.website
+                            nearbyPlace!!.rating = r.rating
+                            nearbyPlace!!.name = place.name
+                            placeList.value!!.add(nearbyPlace!!)
+                        }
+                    })
+                }
+            }
+        })
+    }
+
+    fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double) : Double{
+        val latDiff = Math.abs(lat1 - lat2)
+        val lngDiff = Math.abs(lng1 - lng2) * Math.cos(lat1 * Math.PI / 180.0)
+        return 111319.5 * (latDiff * latDiff + lngDiff * lngDiff)
     }
 
     override fun onBackPressed() {

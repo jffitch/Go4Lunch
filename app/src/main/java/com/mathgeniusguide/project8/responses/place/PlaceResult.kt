@@ -1,7 +1,7 @@
-package com.mathgeniusguide.project8.responses
+package com.mathgeniusguide.project8.responses.place
 
 data class PlaceResult(
-    val geometry: Geometry,
+    val geometry: PlaceGeometry,
     val icon: String,
     val id: String,
     val name: String,

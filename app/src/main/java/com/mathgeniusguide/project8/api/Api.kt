@@ -1,7 +1,8 @@
 package com.mathgeniusguide.project8.api
 
 import com.mathgeniusguide.project8.connectivity.ConnectivityInterceptor
-import com.mathgeniusguide.project8.responses.PlaceResponse
+import com.mathgeniusguide.project8.responses.details.DetailsResponse
+import com.mathgeniusguide.project8.responses.place.PlaceResponse
 import com.mathgeniusguide.project8.util.Constants
 import com.squareup.moshi.Moshi
 import okhttp3.Interceptor
@@ -15,10 +16,15 @@ import retrofit2.http.Query
 interface Api {
     // replace "API URL.json" with the URL that the API is called from
     // replace "QUERY VARIABLE" with the variable that the API uses
-    @GET("API URL.json")
+    @GET("nearbysearch/json")
     suspend fun getPlaces(
-        @Query("QUERY VARIABLE") latitude: Float,
-        @Query("QUERY VARIABLE") longitude: Float): Response<PlaceResponse>
+        @Query("location") location: String): Response<PlaceResponse>
+
+    // replace "API URL.json" with the URL that the API is called from
+    // replace "QUERY VARIABLE" with the variable that the API uses
+    @GET("details/json")
+    suspend fun getDetails(
+        @Query("place_id") place_id: String): Response<DetailsResponse>
 
     companion object {
         operator fun invoke(
