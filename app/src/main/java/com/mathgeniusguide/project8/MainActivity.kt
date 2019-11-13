@@ -36,6 +36,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.mathgeniusguide.project8.responses.NearbyPlace
+import com.mathgeniusguide.project8.responses.details.DetailsResponse
+import com.mathgeniusguide.project8.responses.details.DetailsResult
 import com.mathgeniusguide.project8.viewmodel.MyViewModel
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
@@ -46,7 +48,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private val RC_SIGN_IN = 9001
     private val ANONYMOUS = "anonymous"
     lateinit var locationManager: LocationManager
-    val placeList = MutableLiveData<ArrayList<NearbyPlace>>()
+    val placeList = MutableLiveData<List<NearbyPlace>>()
     var nearbyPlace: NearbyPlace? = null
     var fetched = false
 
@@ -154,28 +156,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         viewModel.fetchPlaces(lat, lng)
         viewModel.places?.observe(this, Observer {
             if (it != null) {
+                Toast.makeText(this, "There are ${it.results.size} nearby places.\nStatus: ${it.status}", Toast.LENGTH_LONG).show()
                 // for each place, use the place_id to fetch details about that place
-                for (place in it.results) {
-                    viewModel.fetchDetails(place.place_id)
-                    viewModel.details?.observe(this, Observer {details ->
-                        // put values in a nearbyPlace object, then add to placeList
-                        // placeList will be observed by MapView and ListView fragments
-                        if (details != null) {
-                            nearbyPlace = NearbyPlace()
-                            val r = details.result
-                            nearbyPlace!!.id = place.place_id
-                            nearbyPlace!!.address = r.formatted_address
-                            nearbyPlace!!.phone = r.formatted_phone_number
-                            nearbyPlace!!.latitude = place.geometry.location.lat
-                            nearbyPlace!!.longitude = place.geometry.location.lng
-                            nearbyPlace!!.distance = coordinateDistance(lat, lng, nearbyPlace!!.latitude, nearbyPlace!!.longitude)
-                            nearbyPlace!!.website = r.website
-                            nearbyPlace!!.rating = r.rating
-                            nearbyPlace!!.name = place.name
-                            placeList.value!!.add(nearbyPlace!!)
-                        }
-                    })
-                }
+                viewModel.fetchDetails(it.results.map {v -> v.place_id})
+                viewModel.details?.observe(this, Observer {details ->
+                    placeList.postValue(details.map {v -> nearbyPlaceDetails(v!!.result)})
+                })
+            } else {
+                Toast.makeText(this, "Error loading nearby places.", Toast.LENGTH_LONG).show()
             }
         })
     }
@@ -184,6 +172,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         val latDiff = Math.abs(lat1 - lat2)
         val lngDiff = Math.abs(lng1 - lng2) * Math.cos(lat1 * Math.PI / 180.0)
         return 111319.5 * (latDiff * latDiff + lngDiff * lngDiff)
+    }
+
+    fun nearbyPlaceDetails(result: DetailsResult) : NearbyPlace {
+        val nearbyPlace = NearbyPlace()
+        nearbyPlace.id = result.place_id
+        nearbyPlace.address = result.formatted_address
+        nearbyPlace.phone = result.formatted_phone_number
+        nearbyPlace.latitude = result.geometry.location.lat
+        nearbyPlace.longitude = result.geometry.location.lng
+        nearbyPlace.distance = coordinateDistance(latitude.value!!, longitude.value!!, nearbyPlace.latitude, nearbyPlace.longitude)
+        nearbyPlace.website = result.website
+        nearbyPlace.name = result.name
+        return nearbyPlace
     }
 
     override fun onBackPressed() {

@@ -15,14 +15,14 @@ import kotlinx.coroutines.launch
 class MyViewModel(application: Application) : AndroidViewModel(application) {
     // declare MutableLiveData variables for use in this class
     private val _places: MutableLiveData<PlaceResponse?>? = MutableLiveData()
-    private val _details: MutableLiveData<DetailsResponse?>? = MutableLiveData()
+    private val _details: MutableLiveData<List<DetailsResponse?>>? = MutableLiveData()
     private val _isDataLoading = MutableLiveData<Boolean>()
     private val _isDataLoadingError = MutableLiveData<Boolean>()
 
     // declare LiveData variables for observing in other classes
     val places: LiveData<PlaceResponse?>?
         get() = _places
-    val details: LiveData<DetailsResponse?>?
+    val details: LiveData<List<DetailsResponse?>>?
         get() = _details
     val isDataLoading: LiveData<Boolean>
         get() = _isDataLoading
@@ -35,7 +35,7 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
         _isDataLoading.value = true
         viewModelScope.launch {
             try {
-                _places?.postValue(Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}").body())
+                _places?.postValue(Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}", 3000, "restaurant").body())
                 _isDataLoading.postValue(false)
                 _isDataLoadingError.postValue(false)
             } catch (e: NoConnectivityException) {
@@ -46,12 +46,12 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // fetch details from place id
-    fun fetchDetails(id: String) {
+    fun fetchDetails(list: List<String>) {
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
         _isDataLoading.value = true
         viewModelScope.launch {
             try {
-                _details?.postValue(Api.invoke(connectivityInterceptor).getDetails(id).body())
+                _details?.postValue(list.map{Api.invoke(connectivityInterceptor).getDetails(it).body()})
                 _isDataLoading.postValue(false)
                 _isDataLoadingError.postValue(false)
             } catch (e: NoConnectivityException) {

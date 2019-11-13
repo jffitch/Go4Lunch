@@ -1,6 +1,6 @@
 package com.mathgeniusguide.project8.responses
 
-class NearbyPlace {
+class NearbyPlace () {
     var id = ""
     var address = ""
     var open = ""
@@ -12,6 +12,6 @@ class NearbyPlace {
     var rating = 0.0
     var image = ""
     var phone = ""
-    var website = ""
+    var website: String? = ""
     var name = ""
 }

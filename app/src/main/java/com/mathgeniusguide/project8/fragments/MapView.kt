@@ -1,21 +1,23 @@
 package com.mathgeniusguide.project8.fragments
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
+import com.mathgeniusguide.project8.responses.NearbyPlace
 import kotlinx.android.synthetic.main.map_view.*
 
 class MapView: Fragment(), OnMapReadyCallback {
@@ -43,25 +45,46 @@ class MapView: Fragment(), OnMapReadyCallback {
             if (googleMap != null && latitude == 91.0 && it != null) {
                 latitude = it
                 setLocation(latitude, longitude)
+                if ((activity as MainActivity).placeList.value != null) {
+                    getMarkers((activity as MainActivity).placeList.value!!)
+                }
             }
         })
         (activity as MainActivity).longitude.observe(viewLifecycleOwner, Observer {
             if (googleMap != null && longitude == 181.0 && it != null) {
                 longitude = it
                 setLocation(latitude, longitude)
+                if ((activity as MainActivity).placeList.value != null) {
+                    getMarkers((activity as MainActivity).placeList.value!!)
+                }
             }
         })
         (activity as MainActivity).placeList.observe(viewLifecycleOwner, Observer {
-            var coord: LatLng? = null
-            var title = ""
-            var pos: CameraPosition? = null
-            for (place in it) {
-                coord = LatLng(place.latitude, place.longitude)
-                title = place.name
-                googleMap!!.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.your_lunch))
-                    .position(coord).title(title))
+            if (googleMap != null) {
+                getMarkers(it)
             }
         })
+    }
+
+    fun getMarkers(list: List<NearbyPlace>) {
+        var coord: LatLng? = null
+        var title = ""
+        var pos: CameraPosition? = null
+        for (place in list) {
+            coord = LatLng(place.latitude, place.longitude)
+            title = place.name
+            googleMap!!.addMarker(MarkerOptions().icon(bitmapDescriptorFromVector(context!!, R.drawable.your_lunch))
+                .position(coord).title(title))
+        }
+    }
+
+    private fun  bitmapDescriptorFromVector(context: Context, vectorResId:Int): BitmapDescriptor {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+        vectorDrawable!!.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        val bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        val canvas =  Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     override fun onMapReady(p0: GoogleMap?) {

@@ -14,14 +14,12 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface Api {
-    // replace "API URL.json" with the URL that the API is called from
-    // replace "QUERY VARIABLE" with the variable that the API uses
     @GET("nearbysearch/json")
     suspend fun getPlaces(
-        @Query("location") location: String): Response<PlaceResponse>
+        @Query("location") location: String,
+        @Query("radius") radius: Int,
+        @Query("type") type: String): Response<PlaceResponse>
 
-    // replace "API URL.json" with the URL that the API is called from
-    // replace "QUERY VARIABLE" with the variable that the API uses
     @GET("details/json")
     suspend fun getDetails(
         @Query("place_id") place_id: String): Response<DetailsResponse>
@@ -35,7 +33,7 @@ interface Api {
                 val url = chain.request()
                     .url()
                     .newBuilder()
-                    .addQueryParameter("api-key", Constants.API_KEY)
+                    .addQueryParameter("key", Constants.API_KEY)
                     .build()
                 val request = chain.request()
                     .newBuilder()
