@@ -22,7 +22,8 @@ interface Api {
 
     @GET("details/json")
     suspend fun getDetails(
-        @Query("place_id") place_id: String): Response<DetailsResponse>
+        @Query("place_id") placeId: String,
+        @Query("fields") fields: String): Response<DetailsResponse>
 
     companion object {
         operator fun invoke(

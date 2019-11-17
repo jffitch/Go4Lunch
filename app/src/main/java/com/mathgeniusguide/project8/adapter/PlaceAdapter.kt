@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.responses.NearbyPlace
+import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.place_item.view.*
 
 class PlaceAdapter (private val items: List<NearbyPlace>, val context: Context) : RecyclerView.Adapter<PlaceAdapter.ViewHolder> () {
@@ -21,14 +22,16 @@ class PlaceAdapter (private val items: List<NearbyPlace>, val context: Context) 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val i = items[position]
-        // Glide.with(context).load(i.placeImage).into(holder.placeImage)
-        holder.placeDistance.text = i.distance.toString()
+        if (i.image != "") {
+            Glide.with(context).load("${Constants.BASE_URL}photo?maxheight=90&key=${Constants.API_KEY}&photo_reference=${i.image}").into(holder.placeImage)
+        }
+        holder.placeDistance.text = "${i.distance}m"
         holder.star3.visibility = if (i.rating > 4) View.VISIBLE else View.GONE
         holder.star2.visibility = if (i.rating > 3) View.VISIBLE else View.GONE
         holder.star1.visibility = if (i.rating > 2) View.VISIBLE else View.GONE
         holder.placeName.text = i.name
-        holder.placeDetails.text = i.address
-        // holder.placeTime.text = i.placeTime
+        holder.placeDetails.text = i.address.split(",")[0]
+        holder.placeTime.text = i.time
         // holder.placeWorkers.visibility = if (true) View.VISIBLE else View.GONE
         // holder.placeRating.visibility = if (true) View.VISIBLE else View.GONE
         holder.parent.setOnClickListener {

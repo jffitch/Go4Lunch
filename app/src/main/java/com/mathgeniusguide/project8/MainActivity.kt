@@ -12,9 +12,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment.findNavController
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -23,7 +21,6 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.android.synthetic.main.activity_main.*
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -36,13 +33,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.mathgeniusguide.project8.responses.NearbyPlace
-import com.mathgeniusguide.project8.responses.details.DetailsResponse
-import com.mathgeniusguide.project8.responses.details.DetailsResult
-import com.mathgeniusguide.project8.viewmodel.MyViewModel
+import com.mathgeniusguide.project8.responses.details.*
+import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
+import java.util.*
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
-    val viewModel by lazy { ViewModelProviders.of(this).get(MyViewModel::class.java)}
+    val viewModel by lazy { ViewModelProviders.of(this).get(PlacesViewModel::class.java)}
     lateinit var navController: NavController
     private val TAG = "Go4Lunch"
     private val RC_SIGN_IN = 9001
@@ -156,22 +153,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         viewModel.fetchPlaces(lat, lng)
         viewModel.places?.observe(this, Observer {
             if (it != null) {
-                Toast.makeText(this, "There are ${it.results.size} nearby places.\nStatus: ${it.status}", Toast.LENGTH_LONG).show()
                 // for each place, use the place_id to fetch details about that place
                 viewModel.fetchDetails(it.results.map {v -> v.place_id})
                 viewModel.details?.observe(this, Observer {details ->
                     placeList.postValue(details.map {v -> nearbyPlaceDetails(v!!.result)})
                 })
-            } else {
-                Toast.makeText(this, "Error loading nearby places.", Toast.LENGTH_LONG).show()
             }
         })
     }
 
-    fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double) : Double{
+    fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double) : Int{
         val latDiff = Math.abs(lat1 - lat2)
         val lngDiff = Math.abs(lng1 - lng2) * Math.cos(lat1 * Math.PI / 180.0)
-        return 111319.5 * (latDiff * latDiff + lngDiff * lngDiff)
+        return (111319.5 * Math.sqrt(latDiff * latDiff + lngDiff * lngDiff)).toInt()
     }
 
     fun nearbyPlaceDetails(result: DetailsResult) : NearbyPlace {
@@ -184,8 +178,75 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         nearbyPlace.distance = coordinateDistance(latitude.value!!, longitude.value!!, nearbyPlace.latitude, nearbyPlace.longitude)
         nearbyPlace.website = result.website
         nearbyPlace.name = result.name
+        nearbyPlace.rating = result.rating
+        nearbyPlace.time = openTime(result.opening_hours)
+        if (result.photos != null && result.photos.isNotEmpty()) {
+            nearbyPlace.image = result.photos[0].photo_reference
+        }
         return nearbyPlace
     }
+
+    // CURRENT GOAL
+    fun openTime(times: DetailsOpeningHours?) : String {
+        if (times == null) {
+            return resources.getString(R.string.open_24_7)
+        }
+        val today = Calendar.getInstance()
+        val todayDay = today.get(Calendar.DAY_OF_WEEK) - 1
+        val todayHour = today.get(Calendar.HOUR_OF_DAY)
+        val todayMinute = today.get(Calendar.MINUTE)
+        val dayAndTime = "${todayDay}${todayHour}${todayMinute}".toInt()
+        if (times.open_now) {
+            val periods = times.periods.map{"${it.close.day}${it.close.time}".toInt()}.sorted()
+            val periodsAfter = periods.filter{it > dayAndTime}
+            val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
+            val diff = timeDiff(dayAndTime, next)
+            val nextDay = next / 10000
+            val nextHour = (next / 100) % 100
+            val nextMinute = next % 100
+            if (diff < 30) {
+                return resources.getString(R.string.closing_soon)
+            }
+            if (diff < 1440) {
+                return String.format(resources.getString(R.string.open_until), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+            }
+            return resources.getString(R.string.open_24)
+        } else {
+            val periods = times.periods.map{"${it.open.day}${it.open.time}".toInt()}
+            val periodsAfter = periods.filter{it > dayAndTime}
+            val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
+            val diff = timeDiff(dayAndTime, next)
+            val nextDay = next / 10000
+            val nextHour = (next / 100) % 100
+            val nextMinute = next % 100
+            if (diff < 1440) {
+                return String.format(resources.getString(R.string.opens_at), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+            }
+            if (listOf(-6, 1).contains(nextDay - todayDay)) {
+                return String.format(resources.getString(R.string.opens_tomorrow_at), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+            }
+            return String.format(resources.getString(R.string.opens_day_at), resources.getString(when (nextDay){
+                0 -> R.string.sunday
+                1 -> R.string.monday
+                2 -> R.string.tuesday
+                3 -> R.string.wednesday
+                4 -> R.string.thursday
+                5 -> R.string.friday
+                else -> R.string.saturday
+            }), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+        }
+    }
+
+    fun timeDiff(start: Int, end: Int) : Int{
+        // inputs are 5 digit numbers in form dhhmm
+        // convert to minutes, then subtract
+        // add 10080 if negative
+        val startMinutes = start - 40 * (start / 100) - 4560 * (start / 10000)
+        val endMinutes = end - 40 * (end / 100) - 4560 * (end / 10000)
+        return (if (endMinutes < startMinutes) 10080 else 0) + endMinutes - startMinutes
+    }
+    // https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=41.46,-72.8222&radius=3000&type=restaurant&fields=place_id&key=AIzaSyDMWYwVXRhuhSQ5vcom9iAI2-FH6T6QKDI
+    // https://maps.googleapis.com/maps/api/place/details/json?place_id=ChIJgSJBwI_O54kRYpfsTlHz2KQ&key=AIzaSyDMWYwVXRhuhSQ5vcom9iAI2-FH6T6QKDI&fields=place_id,formatted_address,formatted_phone_number,geometry/location,website,name,rating,opening_hours
 
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {

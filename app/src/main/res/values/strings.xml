@@ -16,4 +16,21 @@
 
 	<!--map-->
 	<string name="you_are_here">You Are Here</string>
+	<string name="loading_nearby_places">Loading Nearby Places</string>
+	<string name="closing_soon">Closing Soon</string>
+	<string name="open_until">Open Until %1$s</string>
+	<string name="open_24">Open For Next 24 Hours</string>
+	<string name="open_24_7">Open 24/7</string>
+	<string name="opens_at">Opens At %1$s</string>
+	<string name="opens_tomorrow_at">Opens Tomorrow At %1$s</string>
+	<string name="opens_day_at">Opens %1$s At %2$s</string>
+
+	<!--weekdays-->
+	<string name="sunday">Sunday</string>
+	<string name="monday">Monday</string>
+	<string name="tuesday">Tuesday</string>
+	<string name="wednesday">Wednesday</string>
+	<string name="thursday">Thursday</string>
+	<string name="friday">Friday</string>
+	<string name="saturday">Saturday</string>
 </resources>

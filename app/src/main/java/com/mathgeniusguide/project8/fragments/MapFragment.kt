@@ -20,7 +20,7 @@ import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.responses.NearbyPlace
 import kotlinx.android.synthetic.main.map_view.*
 
-class MapView: Fragment(), OnMapReadyCallback {
+class MapFragment: Fragment(), OnMapReadyCallback {
     var googleMap: GoogleMap? = null
     var latitude = 91.0
     var longitude = 181.0
@@ -63,6 +63,12 @@ class MapView: Fragment(), OnMapReadyCallback {
             if (googleMap != null) {
                 getMarkers(it)
             }
+        })
+        (activity as MainActivity).viewModel.isDataLoading.observe(viewLifecycleOwner, Observer {
+            progressScreen.visibility = if(it) View.VISIBLE else View.GONE
+        })
+        (activity as MainActivity).viewModel.detailsProgress.observe(viewLifecycleOwner, Observer {
+            progressCounter.text = "${it}/${(activity as MainActivity).viewModel.detailsCount.value}"
         })
     }
 

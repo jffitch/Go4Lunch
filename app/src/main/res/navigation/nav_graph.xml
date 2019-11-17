@@ -9,7 +9,7 @@
             app:enterAnim="@anim/push_right_in"
             app:exitAnim="@anim/push_right_out" />
     <fragment android:id="@+id/map_view"
-              android:name="com.mathgeniusguide.project8.fragments.MapView"
+              android:name="com.mathgeniusguide.project8.fragments.MapFragment"
               android:label="@string/map_view"
               tools:layout="@layout/map_view">
         <action android:id="@+id/load_page_from_map"
@@ -18,7 +18,7 @@
                 app:exitAnim="@anim/push_left_out" />
     </fragment>
     <fragment android:id="@+id/list_view"
-              android:name="com.mathgeniusguide.project8.fragments.ListView"
+              android:name="com.mathgeniusguide.project8.fragments.ListFragment"
               android:label="@string/list_view"
               tools:layout="@layout/list_view">
         <action android:id="@+id/load_page_from_map"
@@ -27,12 +27,12 @@
                 app:exitAnim="@anim/push_left_out" />
     </fragment>
     <fragment android:id="@+id/workmates"
-              android:name="com.mathgeniusguide.project8.fragments.Workmates"
+              android:name="com.mathgeniusguide.project8.fragments.WorkmatesFragment"
               android:label="@string/workmates"
               tools:layout="@layout/workmates">
     </fragment>
     <fragment android:id="@+id/login"
-              android:name="com.mathgeniusguide.project8.fragments.Login"
+              android:name="com.mathgeniusguide.project8.fragments.LoginFragment"
               android:label="@string/login"
               tools:layout="@layout/login">
         <action android:id="@+id/action_login"
