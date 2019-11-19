@@ -21,7 +21,7 @@ class ListFragment: Fragment() {
         super.onActivityCreated(savedInstanceState)
         if ((activity as MainActivity).placeList.value != null) {
             listViewRV.layoutManager = LinearLayoutManager(context)
-            listViewRV.adapter = PlaceAdapter((activity as MainActivity).placeList.value!!.sortedBy{it.distance}, context!!)
+            listViewRV.adapter = PlaceAdapter((activity as MainActivity).placeList.value!!.sortedBy{it.distance}, context!!, (activity as MainActivity).chosenRestaurantList)
         }
     }
 }

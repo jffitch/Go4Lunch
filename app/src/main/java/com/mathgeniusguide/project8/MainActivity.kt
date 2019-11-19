@@ -32,6 +32,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.firebase.database.*
+import com.mathgeniusguide.project8.database.ChosenRestaurantItem
 import com.mathgeniusguide.project8.responses.NearbyPlace
 import com.mathgeniusguide.project8.responses.details.*
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
@@ -55,6 +57,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var firebaseUser: FirebaseUser? = null;
     var username = ANONYMOUS
     var photoUrl = ""
+    lateinit var database: DatabaseReference
+    var chosenRestaurantList = List<ChosenRestaurantItem>()
 
     // Location
     var locationEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
@@ -131,6 +135,44 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 0.toFloat(),
                 this
             )
+        }
+
+        // initialize database
+        database = FirebaseDatabase.getInstance().reference
+        database.orderByKey().addListenerForSingleValueEvent(itemListener)
+    }
+
+    var itemListener: ValueEventListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            // Get Post object and use the values to update the UI
+            addDataToList(dataSnapshot)
+        }
+        override fun onCancelled(databaseError: DatabaseError) {
+            // Getting Item failed, log a message
+            Log.w("MainActivity", "loadItem:onCancelled", databaseError.toException())
+        }
+    }
+
+    private fun addDataToList(dataSnapshot: DataSnapshot) {
+        val items = dataSnapshot.children.iterator()
+        //Check if current database contains any collection
+        if (items.hasNext()) {
+            val index = items.next()
+            val itemsIterator = index.children.iterator()
+
+            //check if the collection has any items or not
+            while (itemsIterator.hasNext()) {
+                //get current item
+                val currentItem = itemsIterator.next()
+                val chosenRestaurantItem = ChosenRestaurantItem.create()
+                //get current data in a map
+                val map = currentItem.getValue() as HashMap<String, Any>
+                //key will return Firebase ID
+                chosenRestaurantItem.id = currentItem.key
+                chosenRestaurantItem.username = map.get("username") as String?
+                chosenRestaurantItem.restaurant = map.get("restaurant") as String?
+                chosenRestaurantList.add(chosenRestaurantItem);
+            }
         }
     }
 
