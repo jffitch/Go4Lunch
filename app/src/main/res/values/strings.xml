@@ -30,7 +30,13 @@
 	<string name="hasnt_decided_yet">%1$s hasn\'t decided yet.</string>
 	<string name="is_eating_at">%1$s is eating at %2$s.</string>
 
-	<!--weekdays-->
+    <!--restaurant-page-->
+    <string name="call">CALL</string>
+    <string name="like">LIKE</string>
+    <string name="website">WEBSITE</string>
+	<string name="is_joining">%1$s is joining!</string>
+
+    <!--weekdays-->
 	<string name="sunday">Sunday</string>
 	<string name="monday">Monday</string>
 	<string name="tuesday">Tuesday</string>

@@ -13,7 +13,7 @@
               android:label="@string/map_view"
               tools:layout="@layout/map_view">
         <action android:id="@+id/load_page_from_map"
-                app:destination="@id/restaurant_page"
+                app:destination="@id/restaurant_view"
                 app:enterAnim="@anim/push_left_in"
                 app:exitAnim="@anim/push_left_out" />
     </fragment>
@@ -22,7 +22,7 @@
               android:label="@string/list_view"
               tools:layout="@layout/list_view">
         <action android:id="@+id/load_page_from_map"
-                app:destination="@id/restaurant_page"
+                app:destination="@id/restaurant_view"
                 app:enterAnim="@anim/push_left_in"
                 app:exitAnim="@anim/push_left_out" />
     </fragment>
@@ -40,9 +40,9 @@
                 app:enterAnim="@anim/push_left_in"
                 app:exitAnim="@anim/push_left_out" />
     </fragment>
-    <fragment android:id="@+id/restaurant_page"
-              android:name="com.mathgeniusguide.project8.fragments.RestaurantPage"
+    <fragment android:id="@+id/restaurant_view"
+              android:name="com.mathgeniusguide.project8.fragments.RestaurantFragment"
               android:label="@string/restaurant_page"
-              tools:layout="@layout/restaurant_page">
+              tools:layout="@layout/restaurant_view">
     </fragment>
 </navigation>

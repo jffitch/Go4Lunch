@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private val ANONYMOUS = "anonymous"
     lateinit var locationManager: LocationManager
     val placeList = MutableLiveData<List<NearbyPlace>>()
-    var nearbyPlace: NearbyPlace? = null
+    var chosenPlace: NearbyPlace? = null
     var fetched = false
 
     // Firebase variables
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var username = ANONYMOUS
     var photoUrl = ""
     lateinit var database: DatabaseReference
-    var chosenRestaurantList = List<ChosenRestaurantItem>()
+    var chosenRestaurantList = ArrayList<ChosenRestaurantItem>()
 
     // Location
     var locationEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
