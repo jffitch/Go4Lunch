@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.gms.auth.api.Auth
@@ -27,26 +26,30 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.view.View
+import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.google.firebase.database.*
 import com.mathgeniusguide.project8.database.ChosenRestaurantItem
-import com.mathgeniusguide.project8.responses.NearbyPlace
+import com.mathgeniusguide.project8.util.NearbyPlace
 import com.mathgeniusguide.project8.responses.details.*
+import com.mathgeniusguide.project8.util.Constants
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import java.util.*
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
-    val viewModel by lazy { ViewModelProviders.of(this).get(PlacesViewModel::class.java)}
+    val viewModel by lazy { ViewModelProviders.of(this).get(PlacesViewModel::class.java) }
     lateinit var navController: NavController
     private val TAG = "Go4Lunch"
     private val RC_SIGN_IN = 9001
     private val ANONYMOUS = "anonymous"
     lateinit var locationManager: LocationManager
+    val placeIdList: List<String> = emptyList()
     val placeList = MutableLiveData<List<NearbyPlace>>()
     var chosenPlace: NearbyPlace? = null
     var fetched = false
@@ -56,6 +59,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     lateinit var firebaseAuth: FirebaseAuth
     var firebaseUser: FirebaseUser? = null;
     var username = ANONYMOUS
+    var useremail = ANONYMOUS
+    var userkey = ""
     var photoUrl = ""
     lateinit var database: DatabaseReference
     var chosenRestaurantList = ArrayList<ChosenRestaurantItem>()
@@ -87,6 +92,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         drawer_view.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.logout -> logout()
+                R.id.your_lunch -> yourLunch()
                 else -> it.onNavDestinationSelected(navController)
             }
         }
@@ -109,11 +115,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser()
         if (firebaseUser != null) {
-            username = firebaseUser!!.getDisplayName() ?: ANONYMOUS
+            username = firebaseUser!!.displayName ?: ANONYMOUS
+            useremail = firebaseUser!!.email ?: ANONYMOUS
+            val header = drawer_view.getHeaderView(0)
+            header.findViewById<TextView>(R.id.userName).text = username
+            header.findViewById<TextView>(R.id.userEmail).text = useremail
             if (firebaseUser!!.getPhotoUrl() != null) {
                 photoUrl = firebaseUser!!.getPhotoUrl().toString()
             }
-            findNavController(nav_host_fragment).navigate(R.id.action_login)
+            navController.navigate(R.id.action_login)
             drawer_view.visibility = View.VISIBLE
             tabs.visibility = View.VISIBLE
             toolbar.visibility = View.VISIBLE
@@ -121,11 +131,24 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
         // Device Location
         if (!locationPermission()) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 123)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                123
+            )
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            && ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             locationEnabled = true
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -147,6 +170,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             // Get Post object and use the values to update the UI
             addDataToList(dataSnapshot)
         }
+
         override fun onCancelled(databaseError: DatabaseError) {
             // Getting Item failed, log a message
             Log.w("MainActivity", "loadItem:onCancelled", databaseError.toException())
@@ -174,11 +198,38 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 chosenRestaurantList.add(chosenRestaurantItem);
             }
         }
+
+        if (chosenRestaurantList.none { it.username == username }) {
+            val newItem = database.child(Constants.FIREBASE_ITEM).push()
+            val chosenRestaurantItem = ChosenRestaurantItem.create()
+            chosenRestaurantItem.id = newItem.key
+            chosenRestaurantItem.username = username
+            chosenRestaurantItem.restaurant = ""
+            newItem.setValue(chosenRestaurantItem)
+        } else {
+            userkey = chosenRestaurantList.first { it.username == username }.id!!
+        }
+    }
+
+    fun updateItem(itemKey: String, restaurant: String) {
+        val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
+        itemReference.child("restaurant").setValue(restaurant);
+    }
+
+    fun deleteItem(itemKey: String) {
+        val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
+        itemReference.removeValue()
     }
 
     fun locationPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onLocationChanged(location: Location?) {
@@ -193,31 +244,30 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     fun getNearbyPlaces(lat: Double, lng: Double) {
         // fetch places from API
         viewModel.fetchPlaces(lat, lng)
-        viewModel.places?.observe(this, Observer {
-            if (it != null) {
-                // for each place, use the place_id to fetch details about that place
-                viewModel.fetchDetails(it.results.map {v -> v.place_id})
-                viewModel.details?.observe(this, Observer {details ->
-                    placeList.postValue(details.map {v -> nearbyPlaceDetails(v!!.result)})
-                })
-            }
+        viewModel.details?.observe(this, Observer { details ->
+            placeList.postValue(details.map { v -> nearbyPlaceDetails(v!!.result) })
         })
     }
 
-    fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double) : Int{
+    fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Int {
         val latDiff = Math.abs(lat1 - lat2)
         val lngDiff = Math.abs(lng1 - lng2) * Math.cos(lat1 * Math.PI / 180.0)
         return (111319.5 * Math.sqrt(latDiff * latDiff + lngDiff * lngDiff)).toInt()
     }
 
-    fun nearbyPlaceDetails(result: DetailsResult) : NearbyPlace {
+    fun nearbyPlaceDetails(result: DetailsResult): NearbyPlace {
         val nearbyPlace = NearbyPlace()
         nearbyPlace.id = result.place_id
         nearbyPlace.address = result.formatted_address
         nearbyPlace.phone = result.formatted_phone_number
         nearbyPlace.latitude = result.geometry.location.lat
         nearbyPlace.longitude = result.geometry.location.lng
-        nearbyPlace.distance = coordinateDistance(latitude.value!!, longitude.value!!, nearbyPlace.latitude, nearbyPlace.longitude)
+        nearbyPlace.distance = coordinateDistance(
+            latitude.value!!,
+            longitude.value!!,
+            nearbyPlace.latitude,
+            nearbyPlace.longitude
+        )
         nearbyPlace.website = result.website
         nearbyPlace.name = result.name
         nearbyPlace.rating = result.rating
@@ -228,8 +278,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         return nearbyPlace
     }
 
-    // CURRENT GOAL
-    fun openTime(times: DetailsOpeningHours?) : String {
+    fun openTime(times: DetailsOpeningHours?): String {
         if (times == null) {
             return resources.getString(R.string.open_24_7)
         }
@@ -239,8 +288,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         val todayMinute = today.get(Calendar.MINUTE)
         val dayAndTime = "${todayDay}${todayHour}${todayMinute}".toInt()
         if (times.open_now) {
-            val periods = times.periods.map{"${it.close.day}${it.close.time}".toInt()}.sorted()
-            val periodsAfter = periods.filter{it > dayAndTime}
+            val periods = times.periods.map { "${it.close.day}${it.close.time}".toInt() }.sorted()
+            val periodsAfter = periods.filter { it > dayAndTime }
             val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
             val diff = timeDiff(dayAndTime, next)
             val nextDay = next / 10000
@@ -250,36 +299,49 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 return resources.getString(R.string.closing_soon)
             }
             if (diff < 1440) {
-                return String.format(resources.getString(R.string.open_until), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+                return String.format(
+                    resources.getString(R.string.open_until),
+                    "${nextHour}:${nextMinute.toString().padStart(2, '0')}"
+                )
             }
             return resources.getString(R.string.open_24)
         } else {
-            val periods = times.periods.map{"${it.open.day}${it.open.time}".toInt()}
-            val periodsAfter = periods.filter{it > dayAndTime}
+            val periods = times.periods.map { "${it.open.day}${it.open.time}".toInt() }
+            val periodsAfter = periods.filter { it > dayAndTime }
             val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
             val diff = timeDiff(dayAndTime, next)
             val nextDay = next / 10000
             val nextHour = (next / 100) % 100
             val nextMinute = next % 100
             if (diff < 1440) {
-                return String.format(resources.getString(R.string.opens_at), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+                return String.format(
+                    resources.getString(R.string.opens_at),
+                    "${nextHour}:${nextMinute.toString().padStart(2, '0')}"
+                )
             }
             if (listOf(-6, 1).contains(nextDay - todayDay)) {
-                return String.format(resources.getString(R.string.opens_tomorrow_at), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+                return String.format(
+                    resources.getString(R.string.opens_tomorrow_at),
+                    "${nextHour}:${nextMinute.toString().padStart(2, '0')}"
+                )
             }
-            return String.format(resources.getString(R.string.opens_day_at), resources.getString(when (nextDay){
-                0 -> R.string.sunday
-                1 -> R.string.monday
-                2 -> R.string.tuesday
-                3 -> R.string.wednesday
-                4 -> R.string.thursday
-                5 -> R.string.friday
-                else -> R.string.saturday
-            }), "${nextHour}:${nextMinute.toString().padStart(2, '0')}")
+            return String.format(
+                resources.getString(R.string.opens_day_at), resources.getString(
+                    when (nextDay) {
+                        0 -> R.string.sunday
+                        1 -> R.string.monday
+                        2 -> R.string.tuesday
+                        3 -> R.string.wednesday
+                        4 -> R.string.thursday
+                        5 -> R.string.friday
+                        else -> R.string.saturday
+                    }
+                ), "${nextHour}:${nextMinute.toString().padStart(2, '0')}"
+            )
         }
     }
 
-    fun timeDiff(start: Int, end: Int) : Int{
+    fun timeDiff(start: Int, end: Int): Int {
         // inputs are 5 digit numbers in form dhhmm
         // convert to minutes, then subtract
         // add 10080 if negative
@@ -316,7 +378,37 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         drawer_view.visibility = View.GONE
         tabs.visibility = View.GONE
         toolbar.visibility = View.GONE
-        findNavController(nav_host_fragment).navigate(R.id.action_logout)
+        navController.navigate(R.id.action_logout)
+        return true
+    }
+
+    fun yourLunch(): Boolean {
+        if (chosenRestaurantList == null || chosenRestaurantList.isEmpty() || chosenRestaurantList.none { it.username == username }) {
+            Toast.makeText(
+                this,
+                resources.getString(R.string.load_chosen_failed),
+                Toast.LENGTH_LONG
+            )
+                .show()
+            return true
+        }
+        val yourRestaurant = chosenRestaurantList.first { it.username == username }.restaurant
+        if (placeList.value == null || placeList.value!!.isEmpty() || placeList.value!!.none { it.id == yourRestaurant }) {
+            Toast.makeText(
+                this,
+                resources.getString(R.string.load_nearby_failed),
+                Toast.LENGTH_LONG
+            )
+                .show()
+            return true
+        }
+        if (yourRestaurant == "") {
+            Toast.makeText(this, resources.getString(R.string.no_lunch_chosen), Toast.LENGTH_LONG)
+                .show()
+            return true
+        }
+        chosenPlace = placeList.value!!.first { it.id == yourRestaurant }
+        navController.navigate(R.id.load_page_from_map)
         return true
     }
 

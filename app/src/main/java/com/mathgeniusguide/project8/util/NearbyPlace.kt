@@ -1,4 +1,4 @@
-package com.mathgeniusguide.project8.responses
+package com.mathgeniusguide.project8.util
 
 class NearbyPlace () {
     var id = ""
@@ -10,7 +10,7 @@ class NearbyPlace () {
     var workmates = ArrayList<String>()
     var rating = 0.0
     var image = ""
-    var phone = ""
+    var phone: String? = ""
     var website: String? = ""
     var name = ""
 }

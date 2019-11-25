@@ -9,6 +9,7 @@
 	<string name="login">login</string>
 	<string name="map_view">Map View</string>
 	<string name="restaurant_page">Restaurant Page</string>
+	<string name="restaurant_website">Restaurant Website</string>
 	<string name="search">Search</string>
 	<string name="workmates">Workmates</string>
 	<string name="navigation_drawer_open">Drawer Open</string>
@@ -31,10 +32,11 @@
 	<string name="is_eating_at">%1$s is eating at %2$s.</string>
 
     <!--restaurant-page-->
-    <string name="call">CALL</string>
-    <string name="like">LIKE</string>
-    <string name="website">WEBSITE</string>
+	<string name="call">CALL</string>
+	<string name="like">LIKE</string>
+	<string name="website">WEBSITE</string>
 	<string name="is_joining">%1$s is joining!</string>
+	<string name="restaurant_workmates_rv_placeholder">No workmates are eating here yet.</string>
 
     <!--weekdays-->
 	<string name="sunday">Sunday</string>
@@ -44,4 +46,11 @@
 	<string name="thursday">Thursday</string>
 	<string name="friday">Friday</string>
 	<string name="saturday">Saturday</string>
+
+	<!--error messages-->
+	<string name="no_lunch_chosen">You have not yet chosen a place to eat.</string>
+	<string name="load_chosen_failed">Failed to load list of chosen restaurants.</string>
+	<string name="load_nearby_failed">Failed to load list of nearby restaurants.</string>
+	<string name="no_website">This restaurant does not have a website.</string>
+	<string name="no_phone">This restaurant does not have a phone number.</string>
 </resources>

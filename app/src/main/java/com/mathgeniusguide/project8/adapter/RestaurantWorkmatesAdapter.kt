@@ -5,10 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.database.ChosenRestaurantItem
-import com.mathgeniusguide.project8.responses.NearbyPlace
 import kotlinx.android.synthetic.main.workmates_item.view.*
 
 class RestaurantWorkmatesAdapter (private val items: List<String>, val context: Context) : RecyclerView.Adapter<RestaurantWorkmatesAdapter.ViewHolder> () {

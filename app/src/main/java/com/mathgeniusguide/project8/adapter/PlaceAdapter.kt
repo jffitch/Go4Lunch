@@ -1,20 +1,16 @@
 package com.mathgeniusguide.project8.adapter
 
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.ListFragment
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.ChosenRestaurantItem
-import com.mathgeniusguide.project8.responses.NearbyPlace
+import com.mathgeniusguide.project8.util.NearbyPlace
 import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.place_item.view.*
 

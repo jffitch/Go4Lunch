@@ -15,7 +15,8 @@ import kotlinx.coroutines.launch
 
 class PlacesViewModel(application: Application) : AndroidViewModel(application) {
     // declare MutableLiveData variables for use in this class
-    private val _places: MutableLiveData<PlaceResponse?>? = MutableLiveData()
+    private val placeList = mutableListOf<String>()
+    private val _placeListLD = MutableLiveData<List<String>>()
     private val _details: MutableLiveData<List<DetailsResponse?>>? = MutableLiveData()
     private val _detailsCount = MutableLiveData<Int>()
     private val _detailsProgress = MutableLiveData<Int>()
@@ -23,8 +24,8 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     private val _isDataLoadingError = MutableLiveData<Boolean>()
 
     // declare LiveData variables for observing in other classes
-    val places: LiveData<PlaceResponse?>?
-        get() = _places
+    val placeListLD: LiveData<List<String>>
+        get() = _placeListLD
     val details: LiveData<List<DetailsResponse?>>?
         get() = _details
     val detailsCount: LiveData<Int>
@@ -42,7 +43,15 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         _isDataLoading.value = true
         viewModelScope.launch {
             try {
-                _places?.postValue(Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}", 3000, "restaurant").body())
+                var loadedPlaces = Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}", 3000, "restaurant").body()
+                placeList.addAll(loadedPlaces!!.results.map {it.place_id})
+                var token: String? = loadedPlaces.next_page_token
+                while (token != null) {
+                    loadedPlaces = Api.invoke(connectivityInterceptor).getNextPage(token).body()
+                    placeList.addAll(loadedPlaces!!.results.map {it.place_id})
+                    token = loadedPlaces.next_page_token
+                }
+                fetchDetails(placeList)
                 _isDataLoadingError.postValue(false)
             } catch (e: NoConnectivityException) {
                 _isDataLoading.postValue(false)

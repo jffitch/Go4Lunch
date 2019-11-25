@@ -8,31 +8,27 @@
             app:destination="@id/login"
             app:enterAnim="@anim/push_right_in"
             app:exitAnim="@anim/push_right_out" />
+    <action android:id="@+id/load_page_from_map"
+            app:destination="@id/restaurant_view"
+            app:enterAnim="@anim/push_left_in"
+            app:exitAnim="@anim/push_left_out" />
     <fragment android:id="@+id/map_view"
-              android:name="com.mathgeniusguide.project8.fragments.MapFragment"
+              android:name="com.mathgeniusguide.project8.ui.MapFragment"
               android:label="@string/map_view"
               tools:layout="@layout/map_view">
-        <action android:id="@+id/load_page_from_map"
-                app:destination="@id/restaurant_view"
-                app:enterAnim="@anim/push_left_in"
-                app:exitAnim="@anim/push_left_out" />
     </fragment>
     <fragment android:id="@+id/list_view"
-              android:name="com.mathgeniusguide.project8.fragments.ListFragment"
+              android:name="com.mathgeniusguide.project8.ui.ListFragment"
               android:label="@string/list_view"
               tools:layout="@layout/list_view">
-        <action android:id="@+id/load_page_from_map"
-                app:destination="@id/restaurant_view"
-                app:enterAnim="@anim/push_left_in"
-                app:exitAnim="@anim/push_left_out" />
     </fragment>
     <fragment android:id="@+id/workmates"
-              android:name="com.mathgeniusguide.project8.fragments.WorkmatesFragment"
+              android:name="com.mathgeniusguide.project8.ui.WorkmatesFragment"
               android:label="@string/workmates"
               tools:layout="@layout/workmates">
     </fragment>
     <fragment android:id="@+id/login"
-              android:name="com.mathgeniusguide.project8.fragments.LoginFragment"
+              android:name="com.mathgeniusguide.project8.ui.LoginFragment"
               android:label="@string/login"
               tools:layout="@layout/login">
         <action android:id="@+id/action_login"
@@ -41,8 +37,17 @@
                 app:exitAnim="@anim/push_left_out" />
     </fragment>
     <fragment android:id="@+id/restaurant_view"
-              android:name="com.mathgeniusguide.project8.fragments.RestaurantFragment"
+              android:name="com.mathgeniusguide.project8.ui.RestaurantFragment"
               android:label="@string/restaurant_page"
               tools:layout="@layout/restaurant_view">
+        <action android:id="@+id/action_website"
+                app:destination="@id/web_view"
+                app:enterAnim="@anim/push_left_in"
+                app:exitAnim="@anim/push_left_out" />
+    </fragment>
+    <fragment android:id="@+id/web_view"
+            android:name="com.mathgeniusguide.project8.ui.WebFragment"
+            android:label="@string/restaurant_website"
+            tools:layout="@layout/web_view">
     </fragment>
 </navigation>

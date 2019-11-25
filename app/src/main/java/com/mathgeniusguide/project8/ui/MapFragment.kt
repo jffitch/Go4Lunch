@@ -1,4 +1,4 @@
-package com.mathgeniusguide.project8.fragments
+package com.mathgeniusguide.project8.ui
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
@@ -17,7 +18,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.responses.NearbyPlace
+import com.mathgeniusguide.project8.util.NearbyPlace
 import kotlinx.android.synthetic.main.map_view.*
 
 class MapFragment: Fragment(), OnMapReadyCallback {
@@ -96,6 +97,13 @@ class MapFragment: Fragment(), OnMapReadyCallback {
     override fun onMapReady(p0: GoogleMap?) {
         MapsInitializer.initialize(context)
         googleMap = p0
+        googleMap!!.setOnInfoWindowClickListener {marker->
+            val placeList = (activity as MainActivity).placeList.value
+            if (placeList != null && placeList.any{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}) {
+                (activity as MainActivity).chosenPlace = placeList.first{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}
+                findNavController().navigate(R.id.load_page_from_map)
+            }
+        }
     }
 
     fun setLocation(lat: Double, lng: Double) {

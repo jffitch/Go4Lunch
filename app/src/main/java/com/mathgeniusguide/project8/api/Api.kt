@@ -20,6 +20,10 @@ interface Api {
         @Query("radius") radius: Int,
         @Query("type") type: String): Response<PlaceResponse>
 
+    @GET("nearbysearch/json")
+    suspend fun getNextPage(
+        @Query("pagetoken") pagetoken: String): Response<PlaceResponse>
+
     @GET("details/json")
     suspend fun getDetails(
         @Query("place_id") placeId: String,

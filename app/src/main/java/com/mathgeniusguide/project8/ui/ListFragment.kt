@@ -1,4 +1,4 @@
-package com.mathgeniusguide.project8.fragments
+package com.mathgeniusguide.project8.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
