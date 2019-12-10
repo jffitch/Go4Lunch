@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.ChosenRestaurantItem
 import com.mathgeniusguide.project8.util.NearbyPlace
@@ -21,9 +22,9 @@ class WorkmatesAdapter (private val items: List<ChosenRestaurantItem>, val conte
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val i = items[position]
-        // change "i.userImage" to desired image url
-        // Glide.with(context).load(i.userImage).into(holder.userImage)
-        // change "i.userChoice" to desired text
+        if (!i.photo.isNullOrEmpty()) {
+            Glide.with(context).load(i.photo).into(holder.userImage)
+        }
         var restaurantName = ""
         if (placeList != null && placeList.any{it.id == i.restaurant}) {
             restaurantName = placeList.first{it.id == i.restaurant}.name

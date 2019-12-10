@@ -118,6 +118,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
         // Initialize FirebaseAuth
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.currentUser
         login(firebaseUser)
 
         // Device Location
@@ -181,23 +182,25 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             chosenRestaurantItem.id = currentItem.key
             chosenRestaurantItem.username = map.get("username") as String?
             chosenRestaurantItem.restaurant = map.get("restaurant") as String?
+            chosenRestaurantItem.photo = map.get("photo") as String?
             chosenRestaurantList.add(chosenRestaurantItem);
         }
 
         if (username != ANONYMOUS) {
             if (chosenRestaurantList.none { it.username == username }) {
-                createItem(username, "")
+                createItem(username, "", photoUrl)
             }
             userkey = chosenRestaurantList.first { it.username == username }.id!!
         }
     }
 
-    fun createItem(username: String, restaurant: String) {
+    fun createItem(username: String, restaurant: String, photo: String) {
         val newItem = database.child(Constants.FIREBASE_ITEM).push()
         val chosenRestaurantItem = ChosenRestaurantItem.create()
         chosenRestaurantItem.id = newItem.key
         chosenRestaurantItem.username = username
         chosenRestaurantItem.restaurant = restaurant
+        chosenRestaurantItem.photo = photoUrl
         newItem.setValue(chosenRestaurantItem)
     }
 
@@ -369,8 +372,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             val header = drawer_view.getHeaderView(0)
             header.findViewById<TextView>(R.id.userName).text = username
             header.findViewById<TextView>(R.id.userEmail).text = useremail
-            if (user.getPhotoUrl() != null) {
-                photoUrl = user.getPhotoUrl().toString()
+            if (user.photoUrl != null) {
+                photoUrl = user.photoUrl.toString()
             }
             navController.navigate(R.id.action_login)
             drawer_view.visibility = View.VISIBLE

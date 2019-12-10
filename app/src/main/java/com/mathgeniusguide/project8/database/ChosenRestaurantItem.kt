@@ -7,4 +7,5 @@ class ChosenRestaurantItem {
     var id: String? = null
     var username: String? = null
     var restaurant: String? = null
+    var photo: String? = null
 }

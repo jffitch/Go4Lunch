@@ -30,7 +30,7 @@ class RestaurantFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val chosenPlace = (activity as MainActivity).chosenPlace!!
-        val list = (activity as MainActivity).chosenRestaurantList.filter{it.restaurant == chosenPlace.id}.map{it.username!!}
+        val list = (activity as MainActivity).chosenRestaurantList.filter{it.restaurant == chosenPlace.id}
         Glide.with(context!!).load("${Constants.BASE_URL}photo?maxwidth=400&key=${Constants.API_KEY}&photo_reference=${chosenPlace.image}").into(restaurantImage)
         restaurantText.text = chosenPlace.name
         restaurantAddress.text = chosenPlace.address
