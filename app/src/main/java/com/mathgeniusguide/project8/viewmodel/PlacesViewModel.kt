@@ -38,12 +38,12 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _isDataLoadingError
 
     // fetch nearby places
-    fun fetchPlaces(latitude: Double, longitude: Double) {
+    fun fetchPlaces(latitude: Double, longitude: Double, radius: Int) {
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
         _isDataLoading.value = true
         viewModelScope.launch {
             try {
-                var loadedPlaces = Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}", 3000, "restaurant").body()
+                var loadedPlaces = Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}", radius, "restaurant").body()
                 placeList.addAll(loadedPlaces!!.results.map {it.place_id})
                 var token: String? = loadedPlaces.next_page_token
                 while (token != null) {

@@ -40,6 +40,8 @@ import com.mathgeniusguide.project8.responses.details.*
 import com.mathgeniusguide.project8.util.Constants
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import java.util.*
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     // Firebase variables
     lateinit var googleApiClient: GoogleApiClient
     lateinit var firebaseAuth: FirebaseAuth
-    var firebaseUser: FirebaseUser? = null;
+    var firebaseUser: FirebaseUser? = null
     var username = ANONYMOUS
     var useremail = ANONYMOUS
     var userkey = ""
@@ -72,6 +74,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // FacebookSdk.sdkInitialize(applicationContext);
+        // AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -93,6 +97,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             when (it.itemId) {
                 R.id.logout -> logout()
                 R.id.your_lunch -> yourLunch()
+                R.id.settings -> settings()
                 else -> it.onNavDestinationSelected(navController)
             }
         }
@@ -113,21 +118,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
         // Initialize FirebaseAuth
         firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser()
-        if (firebaseUser != null) {
-            username = firebaseUser!!.displayName ?: ANONYMOUS
-            useremail = firebaseUser!!.email ?: ANONYMOUS
-            val header = drawer_view.getHeaderView(0)
-            header.findViewById<TextView>(R.id.userName).text = username
-            header.findViewById<TextView>(R.id.userEmail).text = useremail
-            if (firebaseUser!!.getPhotoUrl() != null) {
-                photoUrl = firebaseUser!!.getPhotoUrl().toString()
-            }
-            navController.navigate(R.id.action_login)
-            drawer_view.visibility = View.VISIBLE
-            tabs.visibility = View.VISIBLE
-            toolbar.visibility = View.VISIBLE
-        }
+        login(firebaseUser)
 
         // Device Location
         if (!locationPermission()) {
@@ -178,37 +169,36 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     private fun addDataToList(dataSnapshot: DataSnapshot) {
-        val items = dataSnapshot.children.iterator()
-        //Check if current database contains any collection
-        if (items.hasNext()) {
-            val index = items.next()
-            val itemsIterator = index.children.iterator()
-
-            //check if the collection has any items or not
-            while (itemsIterator.hasNext()) {
-                //get current item
-                val currentItem = itemsIterator.next()
-                val chosenRestaurantItem = ChosenRestaurantItem.create()
-                //get current data in a map
-                val map = currentItem.getValue() as HashMap<String, Any>
-                //key will return Firebase ID
-                chosenRestaurantItem.id = currentItem.key
-                chosenRestaurantItem.username = map.get("username") as String?
-                chosenRestaurantItem.restaurant = map.get("restaurant") as String?
-                chosenRestaurantList.add(chosenRestaurantItem);
-            }
+        val items = dataSnapshot.child(Constants.FIREBASE_ITEM).children.iterator()
+        //check if the collection has any items or not
+        while (items.hasNext()) {
+            //get current item
+            val currentItem = items.next()
+            val chosenRestaurantItem = ChosenRestaurantItem.create()
+            //get current data in a map
+            val map = currentItem.getValue() as HashMap<String, Any>
+            //key will return Firebase ID
+            chosenRestaurantItem.id = currentItem.key
+            chosenRestaurantItem.username = map.get("username") as String?
+            chosenRestaurantItem.restaurant = map.get("restaurant") as String?
+            chosenRestaurantList.add(chosenRestaurantItem);
         }
 
-        if (chosenRestaurantList.none { it.username == username }) {
-            val newItem = database.child(Constants.FIREBASE_ITEM).push()
-            val chosenRestaurantItem = ChosenRestaurantItem.create()
-            chosenRestaurantItem.id = newItem.key
-            chosenRestaurantItem.username = username
-            chosenRestaurantItem.restaurant = ""
-            newItem.setValue(chosenRestaurantItem)
-        } else {
+        if (username != ANONYMOUS) {
+            if (chosenRestaurantList.none { it.username == username }) {
+                createItem(username, "")
+            }
             userkey = chosenRestaurantList.first { it.username == username }.id!!
         }
+    }
+
+    fun createItem(username: String, restaurant: String) {
+        val newItem = database.child(Constants.FIREBASE_ITEM).push()
+        val chosenRestaurantItem = ChosenRestaurantItem.create()
+        chosenRestaurantItem.id = newItem.key
+        chosenRestaurantItem.username = username
+        chosenRestaurantItem.restaurant = restaurant
+        newItem.setValue(chosenRestaurantItem)
     }
 
     fun updateItem(itemKey: String, restaurant: String) {
@@ -242,8 +232,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     fun getNearbyPlaces(lat: Double, lng: Double) {
+        val pref = getSharedPreferences(Constants.PREF_LOCATION, 0)
+        val radius = pref?.getInt("radius", 3000) ?: 3000
         // fetch places from API
-        viewModel.fetchPlaces(lat, lng)
+        viewModel.fetchPlaces(lat, lng, radius)
         viewModel.details?.observe(this, Observer { details ->
             placeList.postValue(details.map { v -> nearbyPlaceDetails(v!!.result) })
         })
@@ -369,6 +361,24 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
     }
 
+    fun login(user: FirebaseUser?) {
+        firebaseUser = user
+        if (user != null) {
+            username = user.displayName ?: ANONYMOUS
+            useremail = user.email ?: ANONYMOUS
+            val header = drawer_view.getHeaderView(0)
+            header.findViewById<TextView>(R.id.userName).text = username
+            header.findViewById<TextView>(R.id.userEmail).text = useremail
+            if (user.getPhotoUrl() != null) {
+                photoUrl = user.getPhotoUrl().toString()
+            }
+            navController.navigate(R.id.action_login)
+            drawer_view.visibility = View.VISIBLE
+            tabs.visibility = View.VISIBLE
+            toolbar.visibility = View.VISIBLE
+        }
+    }
+
     fun logout(): Boolean {
         firebaseAuth.signOut()
         Auth.GoogleSignInApi.signOut(googleApiClient);
@@ -409,6 +419,11 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         }
         chosenPlace = placeList.value!!.first { it.id == yourRestaurant }
         navController.navigate(R.id.load_page_from_map)
+        return true
+    }
+
+    fun settings(): Boolean {
+        navController.navigate(R.id.action_settings)
         return true
     }
 

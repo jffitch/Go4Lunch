@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.PlaceAdapter
+import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.list_view.*
 
 class ListFragment: Fragment() {
@@ -21,8 +22,21 @@ class ListFragment: Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if ((activity as MainActivity).placeList.value != null) {
+            val placeList = (activity as MainActivity).placeList.value!!
+            for (i in placeList) {
+                i.workmates = (activity as MainActivity).chosenRestaurantList.filter { it.restaurant == i.id }.size
+            }
             listViewRV.layoutManager = LinearLayoutManager(context)
-            listViewRV.adapter = PlaceAdapter((activity as MainActivity).placeList.value!!.sortedBy{it.distance}, context!!, (activity as MainActivity).chosenRestaurantList, findNavController())
+            val pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
+            val orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
+
+            val sortedList = when (orderBy) {
+                Constants.BY_RATING -> placeList.sortedByDescending { it.rating }
+                Constants.BY_WORKMATES -> placeList.sortedByDescending { it.workmates }
+                Constants.BY_NAME -> placeList.sortedBy { it.name }
+                else -> placeList.sortedBy { it.distance }
+            }
+            listViewRV.adapter = PlaceAdapter(sortedList, context!!, findNavController())
         }
     }
 }

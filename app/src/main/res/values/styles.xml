@@ -24,5 +24,18 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/restaurant_tabs</item>
     </style>
+    <style name="settings_label">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="settings_edittext_number">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_marginStart">25dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:inputType">number</item>
+    </style>
 
 </resources>

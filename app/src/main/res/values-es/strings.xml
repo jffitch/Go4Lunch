@@ -1,0 +1,64 @@
+<resources>
+	<string name="app_name">Go4Lunch</string>
+
+	<!--navigation items-->
+	<string name="logout">Cierra Sesión</string>
+	<string name="settings">Configuraciones</string>
+	<string name="your_lunch">Su Almuerzo</string>
+	<string name="list_view">Vista De Lista</string>
+	<string name="login">iniciar sesión</string>
+	<string name="map_view">Vista De Mapa</string>
+	<string name="restaurant_page">Página De Restaurante</string>
+	<string name="restaurant_website">Sitio Web De Restaurante</string>
+	<string name="search">Búsqueda</string>
+	<string name="workmates">Compañeros</string>
+	<string name="navigation_drawer_open">Abre Cajón</string>
+	<string name="navigation_drawer_close">Cierra Cajón</string>
+
+	<!--map-->
+	<string name="you_are_here">Esta Aqui</string>
+	<string name="loading_nearby_places">Cargando Lugares Cercanos</string>
+	<string name="closing_soon">Cierre Pronto</string>
+	<string name="open_until">Abierto Hasta Las %1$s</string>
+	<string name="open_24">Abierto Para Las Próximas 24 Horas</string>
+	<string name="open_24_7">Abierto 24/7</string>
+	<string name="opens_at">Abre A Las %1$s</string>
+	<string name="opens_tomorrow_at">Abre Mañana A Las %1$s</string>
+	<string name="opens_day_at">Abre %1$s A Las %2$s</string>
+
+	<!--workmates-->
+	<string name="workmates_placeholder">Este compañero de trabajo todavia no lo ha decidido.</string>
+	<string name="hasnt_decided_yet">%1$s todavia no ha decidido.</string>
+	<string name="is_eating_at">%1$s come a %2$s.</string>
+
+	<!--restaurant-page-->
+	<string name="call">LLAMA</string>
+	<string name="like">ME GUSTA</string>
+	<string name="website">SITIO WEB</string>
+	<string name="is_joining">¡%1$s se une!</string>
+	<string name="restaurant_workmates_rv_placeholder">Todavia no hay compañeros de trabajo comiendo aquí.</string>
+
+	<!--weekdays-->
+	<string name="sunday">domingo</string>
+	<string name="monday">lunes</string>
+	<string name="tuesday">martes</string>
+	<string name="wednesday">miércoles</string>
+	<string name="thursday">jueves</string>
+	<string name="friday">viernes</string>
+	<string name="saturday">sábado</string>
+
+	<!--error messages-->
+	<string name="no_lunch_chosen">Todavia no has elegido un lugar para comer.</string>
+	<string name="load_chosen_failed">No se pudo cargar la lista de restaurantes elegidos.</string>
+	<string name="load_nearby_failed">No se pudo cargar la lista de restaurantes cercanos.</string>
+	<string name="no_website">Este restaurante no tiene sitio web.</string>
+	<string name="no_phone">Este restaurante no tiene número de teléfono.</string>
+
+	<!--settings-->
+	<string name="search_radius">Radio De Búsqueda (metros)</string>
+	<string name="listview_order">Orden De Vista De Lista</string>
+	<string name="shortest_distance">menos distancia</string>
+	<string name="highest_rating">mejor calificación</string>
+	<string name="most_workmates">más compañeros</string>
+	<string name="alphabetical">alfabético por nombre</string>
+</resources>

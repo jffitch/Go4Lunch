@@ -14,7 +14,7 @@ import com.mathgeniusguide.project8.util.NearbyPlace
 import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.place_item.view.*
 
-class PlaceAdapter (private val items: List<NearbyPlace>, val context: Context, val chosenRestaurantList: List<ChosenRestaurantItem>, val navController: NavController) : RecyclerView.Adapter<PlaceAdapter.ViewHolder> () {
+class PlaceAdapter (private val items: List<NearbyPlace>, val context: Context, val navController: NavController) : RecyclerView.Adapter<PlaceAdapter.ViewHolder> () {
     override fun getItemCount(): Int {
         return items.size
     }
@@ -35,7 +35,7 @@ class PlaceAdapter (private val items: List<NearbyPlace>, val context: Context, 
         holder.placeName.text = i.name
         holder.placeDetails.text = i.address.split(",")[0]
         holder.placeTime.text = i.time
-        val count = chosenRestaurantList.filter{it.restaurant == i.id}.size
+        val count = i.workmates
         holder.placeWorkmatesCount.text = count.toString()
         holder.placeWorkmates.visibility = if (count == 0) View.INVISIBLE else View.VISIBLE
         holder.parent.setOnClickListener {

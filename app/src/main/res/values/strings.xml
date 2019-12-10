@@ -53,4 +53,16 @@
 	<string name="load_nearby_failed">Failed to load list of nearby restaurants.</string>
 	<string name="no_website">This restaurant does not have a website.</string>
 	<string name="no_phone">This restaurant does not have a phone number.</string>
+
+	<!--settings-->
+	<string name="search_radius">Search Radius (meters)</string>
+	<string name="listview_order">List View Sort Order</string>
+	<string name="shortest_distance">shortest distance</string>
+	<string name="highest_rating">highest rating</string>
+	<string name="most_workmates">most workmates</string>
+	<string name="alphabetical">alphabetical by name</string>
+
+	<!--facebook-->
+	<string name="facebook_app_id">2174751236152917</string>
+	<string name="fb_login_protocol_scheme">fb2174751236152917</string>
 </resources>

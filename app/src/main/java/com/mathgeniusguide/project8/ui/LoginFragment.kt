@@ -13,12 +13,21 @@ import kotlinx.android.synthetic.main.login.*
 import com.mathgeniusguide.project8.MainActivity
 import android.content.Intent
 import androidx.navigation.fragment.findNavController
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginResult
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import java.util.*
 
 class LoginFragment : Fragment() {
     private val TAG = "Go4Lunch"
     private val RC_SIGN_IN = 9001
+    private lateinit var callbackManager: CallbackManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,10 +47,51 @@ class LoginFragment : Fragment() {
                 RC_SIGN_IN
             )
         }
+        callbackManager = CallbackManager.Factory.create();
+        facebookButton.setReadPermissions("email", "public_profile")
+        facebookButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(loginResult: LoginResult) {
+                Log.d(TAG, "facebook:onSuccess:$loginResult")
+                handleFacebookAccessToken(loginResult.accessToken)
+            }
+
+            override fun onCancel() {
+                Log.d(TAG, "facebook:onCancel")
+                // ...
+            }
+
+            override fun onError(error: FacebookException) {
+                Log.d(TAG, "facebook:onError", error)
+                // ...
+            }
+        })
+    }
+
+    private fun handleFacebookAccessToken(token: AccessToken) {
+        Log.d(TAG, "handleFacebookAccessToken:$token")
+
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        (activity as MainActivity).firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(activity!!, { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInWithCredential:success")
+                    (activity as MainActivity).login((activity as MainActivity).firebaseAuth.currentUser)
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInWithCredential:failure", task.exception)
+                    Toast.makeText(
+                        context, "Authentication failed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    // updateUI(null)
+                }
+            })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data);
 
         // PlaceResult returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
@@ -73,10 +123,7 @@ class LoginFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    findNavController().navigate(R.id.action_login)
-                    (activity as MainActivity).findViewById<View>(R.id.drawer_view).visibility = View.VISIBLE
-                    (activity as MainActivity).findViewById<View>(R.id.tabs).visibility = View.VISIBLE
-                    (activity as MainActivity).findViewById<View>(R.id.toolbar).visibility = View.VISIBLE
+                    (activity as MainActivity).login((activity as MainActivity).firebaseAuth.currentUser)
                 }
             })
     }
