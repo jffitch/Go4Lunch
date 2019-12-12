@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.WorkmatesAdapter
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.workmates.*
 
 class WorkmatesFragment: Fragment() {
@@ -23,5 +24,11 @@ class WorkmatesFragment: Fragment() {
             workmatesRV.layoutManager = LinearLayoutManager(context)
             workmatesRV.adapter = WorkmatesAdapter((activity as MainActivity).chosenRestaurantList.sortedByDescending{it.restaurant}, context!!, (activity as MainActivity).placeList.value)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).toolbar.visibility = View.VISIBLE
+        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
     }
 }

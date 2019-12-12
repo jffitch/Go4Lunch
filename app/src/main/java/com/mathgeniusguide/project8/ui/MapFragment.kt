@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.*
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.util.NearbyPlace
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.map_view.*
 
 class MapFragment: Fragment(), OnMapReadyCallback {
@@ -33,6 +34,8 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).toolbar.visibility = View.VISIBLE
+        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
         if (map != null) {
             map.onCreate(null)
             map.onResume()

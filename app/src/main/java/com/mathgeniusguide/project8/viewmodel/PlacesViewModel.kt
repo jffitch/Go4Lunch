@@ -20,6 +20,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     private val _details: MutableLiveData<List<DetailsResponse?>>? = MutableLiveData()
     private val _detailsCount = MutableLiveData<Int>()
     private val _detailsProgress = MutableLiveData<Int>()
+    private val _oneDetail: MutableLiveData<DetailsResponse?>? = MutableLiveData()
     private val _isDataLoading = MutableLiveData<Boolean>()
     private val _isDataLoadingError = MutableLiveData<Boolean>()
 
@@ -32,6 +33,8 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _detailsCount
     val detailsProgress: LiveData<Int>
         get() = _detailsProgress
+    val oneDetail: LiveData<DetailsResponse?>?
+        get() = _oneDetail
     val isDataLoading: LiveData<Boolean>
         get() = _isDataLoading
     val isDataLoadingError: LiveData<Boolean>
@@ -82,5 +85,17 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         val detailsLoaded = Api.invoke(connectivityInterceptor).getDetails(placeIdItem, Constants.FIELDS).body()
         _detailsProgress.postValue(_detailsProgress.value!! + 1)
         return detailsLoaded
+    }
+
+    fun fetchOneDetail(placeId: String) {
+        val connectivityInterceptor = ConnectivityInterceptor(getApplication())
+        viewModelScope.launch {
+            try {
+               _oneDetail?.postValue(Api.invoke(connectivityInterceptor).getDetails(placeId, Constants.FIELDS).body())
+                _isDataLoadingError.postValue(false)
+            } catch (e: NoConnectivityException) {
+                _isDataLoadingError.postValue(true)
+            }
+        }
     }
 }

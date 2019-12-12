@@ -17,6 +17,7 @@ import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.RestaurantWorkmatesAdapter
 import com.mathgeniusguide.project8.util.Constants
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.restaurant_info.*
 import kotlinx.android.synthetic.main.restaurant_tabs.*
 import kotlinx.android.synthetic.main.restaurant_view.*
@@ -29,6 +30,8 @@ class RestaurantFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).toolbar.visibility = View.VISIBLE
+        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
         val chosenPlace = (activity as MainActivity).chosenPlace!!
         val list = (activity as MainActivity).chosenRestaurantList.filter{it.restaurant == chosenPlace.id}
         Glide.with(context!!).load("${Constants.BASE_URL}photo?maxwidth=400&key=${Constants.API_KEY}&photo_reference=${chosenPlace.image}").into(restaurantImage)

@@ -26,6 +26,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,6 +34,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.NavHostFragment.findNavController
+import com.bumptech.glide.Glide
 import com.google.firebase.database.*
 import com.mathgeniusguide.project8.database.ChosenRestaurantItem
 import com.mathgeniusguide.project8.util.NearbyPlace
@@ -42,6 +44,11 @@ import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import java.util.*
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.google.android.gms.common.api.Status
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
@@ -51,8 +58,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private val RC_SIGN_IN = 9001
     private val ANONYMOUS = "anonymous"
     lateinit var locationManager: LocationManager
-    val placeIdList: List<String> = emptyList()
-    val placeList = MutableLiveData<List<NearbyPlace>>()
+    val placeList = MutableLiveData<MutableList<NearbyPlace>>()
     var chosenPlace: NearbyPlace? = null
     var fetched = false
 
@@ -74,9 +80,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // FacebookSdk.sdkInitialize(applicationContext);
-        // AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main)
+        autocompleteFragment.view?.visibility = View.GONE
         setSupportActionBar(toolbar)
 
         navController = findNavController(nav_host_fragment)
@@ -155,6 +160,46 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         // initialize database
         database = FirebaseDatabase.getInstance().reference
         database.orderByKey().addListenerForSingleValueEvent(itemListener)
+
+        // place autocomplete
+        // Initialize the AutocompleteSupportFragment.
+        val autocomplete = autocompleteFragment as AutocompleteSupportFragment
+
+        // Initialize Places.
+        Places.initialize(getApplicationContext(), Constants.API_KEY);
+
+        // Create a new Places client instance.
+        val placesClient = Places.createClient(this);
+
+        // Specify the types of place data to return.
+        autocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+
+        // Set up a PlaceSelectionListener to handle the response.
+        autocomplete.setOnPlaceSelectedListener(object: PlaceSelectionListener {
+            override fun onPlaceSelected(place: Place) {
+                if (placeList.value!!.any {it.id == place.id}) {
+                    chosenPlace = placeList.value!!.first {it.id == place.id}
+                    navController.navigate(R.id.load_page_from_map)
+                } else {
+                    viewModel.fetchOneDetail(place.id!!)
+                    viewModel.oneDetail?.observe(this@MainActivity, Observer {
+                        if (it != null) {
+                            chosenPlace = nearbyPlaceDetails(it.result)
+                            if (placeList.value!!.none {it.id == chosenPlace!!.id}) {
+                                placeList.value!!.add(chosenPlace!!)
+                            }
+                            navController.navigate(R.id.load_page_from_map)
+                        }
+                    })
+                }
+                Log.i(TAG, "Place: " + place.name + ", " + place.id);
+            }
+
+            override fun onError(status: Status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
     }
 
     var itemListener: ValueEventListener = object : ValueEventListener {
@@ -240,7 +285,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         // fetch places from API
         viewModel.fetchPlaces(lat, lng, radius)
         viewModel.details?.observe(this, Observer { details ->
-            placeList.postValue(details.map { v -> nearbyPlaceDetails(v!!.result) })
+            placeList.postValue(details.map { v -> nearbyPlaceDetails(v!!.result) } as MutableList<NearbyPlace>)
         })
     }
 
@@ -346,6 +391,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
     // https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=41.46,-72.8222&radius=3000&type=restaurant&fields=place_id&key=AIzaSyDMWYwVXRhuhSQ5vcom9iAI2-FH6T6QKDI
     // https://maps.googleapis.com/maps/api/place/details/json?place_id=ChIJgSJBwI_O54kRYpfsTlHz2KQ&key=AIzaSyDMWYwVXRhuhSQ5vcom9iAI2-FH6T6QKDI&fields=place_id,formatted_address,formatted_phone_number,geometry/location,website,name,rating,opening_hours
+    // https://maps.googleapis.com/maps/api/place/autocomplete/json?location=41.46,-72.8222&radius=3000&key=AIzaSyDMWYwVXRhuhSQ5vcom9iAI2-FH6T6QKDI&input=sub
 
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
@@ -361,7 +407,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+        when (item.itemId) {
+            R.id.search -> {
+                toolbar.visibility = View.GONE
+                autocompleteFragment.view?.visibility = View.VISIBLE
+                return true
+            }
+            else -> return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+        }
     }
 
     fun login(user: FirebaseUser?) {
@@ -374,6 +427,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             header.findViewById<TextView>(R.id.userEmail).text = useremail
             if (user.photoUrl != null) {
                 photoUrl = user.photoUrl.toString()
+                Glide.with(this).load(photoUrl).into(header.findViewById(R.id.userImage))
             }
             navController.navigate(R.id.action_login)
             drawer_view.visibility = View.VISIBLE
@@ -391,6 +445,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         drawer_view.visibility = View.GONE
         tabs.visibility = View.GONE
         toolbar.visibility = View.GONE
+        autocompleteFragment.view?.visibility = View.GONE
         navController.navigate(R.id.action_logout)
         return true
     }

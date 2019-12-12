@@ -13,6 +13,7 @@ import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.WorkmatesAdapter
 import com.mathgeniusguide.project8.util.Constants
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.settings.*
 import kotlinx.android.synthetic.main.workmates.*
 
@@ -27,19 +28,17 @@ class SettingsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).toolbar.visibility = View.VISIBLE
+        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
         pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
         radius = pref?.getInt("radius", 3000) ?: 3000
         orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
         searchRadiusET.setText(radius.toString())
-
         searchRadiusET.addTextChangedListener(object : TextWatcher {
-
             override fun afterTextChanged(s: Editable) {}
-
             override fun beforeTextChanged(s: CharSequence, start: Int,
                                            count: Int, after: Int) {
             }
-
             override fun onTextChanged(s: CharSequence, start: Int,
                                        before: Int, count: Int) {
                 if (s.isNotEmpty()) {

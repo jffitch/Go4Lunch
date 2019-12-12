@@ -22,6 +22,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class LoginFragment : Fragment() {
@@ -40,6 +41,8 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).toolbar.visibility = View.GONE
+        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
         // enable Google Sign In Button
         googleButton.setOnClickListener {
             startActivityForResult(
