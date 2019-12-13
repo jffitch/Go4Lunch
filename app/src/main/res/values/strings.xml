@@ -18,6 +18,7 @@
 	<!--map-->
 	<string name="you_are_here">You Are Here</string>
 	<string name="loading_nearby_places">Loading Nearby Places</string>
+	<string name="loading_info_for">Loading Info For %1$s</string>
 	<string name="closing_soon">Closing Soon</string>
 	<string name="open_until">Open Until %1$s</string>
 	<string name="open_24">Open For Next 24 Hours</string>

@@ -22,6 +22,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     private val _detailsProgress = MutableLiveData<Int>()
     private val _oneDetail: MutableLiveData<DetailsResponse?>? = MutableLiveData()
     private val _isDataLoading = MutableLiveData<Boolean>()
+    private val _isAutocompleteDataLoading = MutableLiveData<Boolean>()
     private val _isDataLoadingError = MutableLiveData<Boolean>()
 
     // declare LiveData variables for observing in other classes
@@ -37,13 +38,15 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _oneDetail
     val isDataLoading: LiveData<Boolean>
         get() = _isDataLoading
+    val isAutocompleteDataLoading: LiveData<Boolean>
+        get() = _isAutocompleteDataLoading
     val isDataLoadingError: LiveData<Boolean>
         get() = _isDataLoadingError
 
     // fetch nearby places
     fun fetchPlaces(latitude: Double, longitude: Double, radius: Int) {
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
-        _isDataLoading.value = true
+        _isDataLoading.postValue(true)
         viewModelScope.launch {
             try {
                 var loadedPlaces = Api.invoke(connectivityInterceptor).getPlaces("${latitude},${longitude}", radius, "restaurant").body()
@@ -66,7 +69,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     // fetch details from place id
     fun fetchDetails(placeId: List<String>) {
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
-        _isDataLoading.value = true
+        _isDataLoading.postValue(true)
         viewModelScope.launch {
             try {
                 _detailsCount.postValue(placeId.size)
@@ -88,12 +91,15 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun fetchOneDetail(placeId: String) {
+        _isAutocompleteDataLoading.postValue(true)
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
         viewModelScope.launch {
             try {
                _oneDetail?.postValue(Api.invoke(connectivityInterceptor).getDetails(placeId, Constants.FIELDS).body())
+                _isAutocompleteDataLoading.postValue(false)
                 _isDataLoadingError.postValue(false)
             } catch (e: NoConnectivityException) {
+                _isAutocompleteDataLoading.postValue(false)
                 _isDataLoadingError.postValue(true)
             }
         }

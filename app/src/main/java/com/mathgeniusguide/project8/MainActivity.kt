@@ -181,16 +181,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                     chosenPlace = placeList.value!!.first {it.id == place.id}
                     navController.navigate(R.id.load_page_from_map)
                 } else {
+                    autocompleteProgressText.text = String.format(resources.getString(R.string.loading_info_for), place.name)
                     viewModel.fetchOneDetail(place.id!!)
-                    viewModel.oneDetail?.observe(this@MainActivity, Observer {
-                        if (it != null) {
-                            chosenPlace = nearbyPlaceDetails(it.result)
-                            if (placeList.value!!.none {it.id == chosenPlace!!.id}) {
-                                placeList.value!!.add(chosenPlace!!)
-                            }
-                            navController.navigate(R.id.load_page_from_map)
-                        }
-                    })
                 }
                 Log.i(TAG, "Place: " + place.name + ", " + place.id);
             }
@@ -200,6 +192,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 Log.i(TAG, "An error occurred: " + status);
             }
         });
+
+        observeLiveData()
     }
 
     var itemListener: ValueEventListener = object : ValueEventListener {
@@ -284,9 +278,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         val radius = pref?.getInt("radius", 3000) ?: 3000
         // fetch places from API
         viewModel.fetchPlaces(lat, lng, radius)
-        viewModel.details?.observe(this, Observer { details ->
-            placeList.postValue(details.map { v -> nearbyPlaceDetails(v!!.result) } as MutableList<NearbyPlace>)
-        })
     }
 
     fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Int {
@@ -434,6 +425,22 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             tabs.visibility = View.VISIBLE
             toolbar.visibility = View.VISIBLE
         }
+    }
+
+    fun observeLiveData() {
+        viewModel.oneDetail?.observe(this, Observer {
+            if (it != null) {
+                chosenPlace = nearbyPlaceDetails(it.result)
+                placeList.value!!.add(chosenPlace!!)
+                navController.navigate(R.id.load_page_from_map)
+            }
+        })
+        viewModel.details?.observe(this, Observer { details ->
+            placeList.postValue(details.map { v -> nearbyPlaceDetails(v!!.result) } as MutableList<NearbyPlace>)
+        })
+        viewModel.isAutocompleteDataLoading.observe(this, Observer {
+            autocompleteProgressScreen.visibility = if (it) View.VISIBLE else View.GONE
+        })
     }
 
     fun logout(): Boolean {
