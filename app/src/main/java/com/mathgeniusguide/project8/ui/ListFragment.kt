@@ -15,6 +15,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.list_view.*
 
 class ListFragment: Fragment() {
+    lateinit var act: MainActivity
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.list_view, container, false)
@@ -22,16 +24,17 @@ class ListFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).toolbar.visibility = View.VISIBLE
-        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
+        act = activity as MainActivity
+        act.toolbar.visibility = View.VISIBLE
+        act.autocompleteFragment.view?.visibility = View.GONE
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if ((activity as MainActivity).placeList.value != null) {
-            val placeList = (activity as MainActivity).placeList.value!!
+        if (act.placeList.value != null) {
+            val placeList = act.placeList.value!!
             for (i in placeList) {
-                i.workmates = (activity as MainActivity).chosenRestaurantList.filter { it.restaurant == i.id }.size
+                i.workmates = act.chosenRestaurantList.filter { it.restaurant == i.id }.size
             }
             listViewRV.layoutManager = LinearLayoutManager(context)
             val pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)

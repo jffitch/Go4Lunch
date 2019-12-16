@@ -29,6 +29,7 @@ class LoginFragment : Fragment() {
     private val TAG = "Go4Lunch"
     private val RC_SIGN_IN = 9001
     private lateinit var callbackManager: CallbackManager
+    lateinit var act: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,12 +42,13 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).toolbar.visibility = View.GONE
-        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
+        act = activity as MainActivity
+        act.toolbar.visibility = View.GONE
+        act.autocompleteFragment.view?.visibility = View.GONE
         // enable Google Sign In Button
         googleButton.setOnClickListener {
             startActivityForResult(
-                Auth.GoogleSignInApi.getSignInIntent((activity as MainActivity).googleApiClient),
+                Auth.GoogleSignInApi.getSignInIntent(act.googleApiClient),
                 RC_SIGN_IN
             )
         }
@@ -74,12 +76,12 @@ class LoginFragment : Fragment() {
         Log.d(TAG, "handleFacebookAccessToken:$token")
 
         val credential = FacebookAuthProvider.getCredential(token.token)
-        (activity as MainActivity).firebaseAuth.signInWithCredential(credential)
+        act.firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener(activity!!, { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
-                    (activity as MainActivity).login((activity as MainActivity).firebaseAuth.currentUser)
+                    act.login(act.firebaseAuth.currentUser)
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -112,7 +114,7 @@ class LoginFragment : Fragment() {
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         Log.d(TAG, "firebaseAuthWithGooogle:" + acct.id!!)
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        (activity as MainActivity).firebaseAuth.signInWithCredential(credential)
+        act.firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener(activity!!, { task ->
                 Log.d(TAG, "signInWithCredential:onComplete:${task.isSuccessful}")
 
@@ -126,7 +128,7 @@ class LoginFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    (activity as MainActivity).login((activity as MainActivity).firebaseAuth.currentUser)
+                    act.login(act.firebaseAuth.currentUser)
                 }
             })
     }

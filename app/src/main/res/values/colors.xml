@@ -5,5 +5,6 @@
     <color name="colorAccent">#D81B60</color>
     <color name="gray">#C0C0C0</color>
     <color name="blue">#4040ff</color>
+    <color name="green">#00ff00</color>
     <color name="restaurant_tabs">#ff8000</color>
 </resources>

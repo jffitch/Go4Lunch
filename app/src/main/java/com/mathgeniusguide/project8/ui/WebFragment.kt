@@ -14,6 +14,13 @@ import kotlinx.android.synthetic.main.web_view.*
 import kotlinx.android.synthetic.main.workmates.*
 
 class WebFragment: Fragment() {
+    lateinit var act: MainActivity
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        act = activity as MainActivity
+    }
+    
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.web_view, container, false)
@@ -21,12 +28,12 @@ class WebFragment: Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        webView.loadUrl((activity as MainActivity).chosenPlace!!.website)
+        webView.loadUrl(act.chosenPlace!!.website)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).toolbar.visibility = View.VISIBLE
-        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
+        act.toolbar.visibility = View.VISIBLE
+        act.autocompleteFragment.view?.visibility = View.GONE
     }
 }

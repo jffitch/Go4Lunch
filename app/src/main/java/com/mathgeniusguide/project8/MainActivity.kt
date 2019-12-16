@@ -26,7 +26,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.view.View
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -42,8 +41,6 @@ import com.mathgeniusguide.project8.responses.details.*
 import com.mathgeniusguide.project8.util.Constants
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import java.util.*
-import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.common.api.Status
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
@@ -61,6 +58,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     val placeList = MutableLiveData<MutableList<NearbyPlace>>()
     var chosenPlace: NearbyPlace? = null
     var fetched = false
+    var restaurantsLiked = mutableListOf<String>()
 
     // Firebase variables
     lateinit var googleApiClient: GoogleApiClient
@@ -119,10 +117,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         googleApiClient = GoogleApiClient.Builder(this)
             .enableAutoManage(this, this)
             .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-            .build();
+            .build()
 
         // Initialize FirebaseAuth
-        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance()
         firebaseUser = firebaseAuth.currentUser
         login(firebaseUser)
 
@@ -166,13 +164,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         val autocomplete = autocompleteFragment as AutocompleteSupportFragment
 
         // Initialize Places.
-        Places.initialize(getApplicationContext(), Constants.API_KEY);
+        Places.initialize(getApplicationContext(), Constants.API_KEY)
 
         // Create a new Places client instance.
         val placesClient = Places.createClient(this);
 
         // Specify the types of place data to return.
-        autocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
 
         // Set up a PlaceSelectionListener to handle the response.
         autocomplete.setOnPlaceSelectedListener(object: PlaceSelectionListener {
@@ -184,12 +182,12 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                     autocompleteProgressText.text = String.format(resources.getString(R.string.loading_info_for), place.name)
                     viewModel.fetchOneDetail(place.id!!)
                 }
-                Log.i(TAG, "Place: " + place.name + ", " + place.id);
+                Log.i(TAG, "Place: " + place.name + ", " + place.id)
             }
 
             override fun onError(status: Status) {
                 // TODO: Handle the error.
-                Log.i(TAG, "An error occurred: " + status);
+                Log.i(TAG, "An error occurred: " + status)
             }
         });
 
@@ -221,31 +219,39 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             chosenRestaurantItem.id = currentItem.key
             chosenRestaurantItem.username = map.get("username") as String?
             chosenRestaurantItem.restaurant = map.get("restaurant") as String?
+            chosenRestaurantItem.liked = map.get("liked") as String?
             chosenRestaurantItem.photo = map.get("photo") as String?
             chosenRestaurantList.add(chosenRestaurantItem);
         }
 
         if (username != ANONYMOUS) {
             if (chosenRestaurantList.none { it.username == username }) {
-                createItem(username, "", photoUrl)
+                createItem(username, "", "", photoUrl)
             }
             userkey = chosenRestaurantList.first { it.username == username }.id!!
+            restaurantsLiked = chosenRestaurantList.first { it.username == username }.liked!!.split(" , ").toMutableList()
         }
     }
 
-    fun createItem(username: String, restaurant: String, photo: String) {
+    fun createItem(username: String, restaurant: String, liked: String, photo: String) {
         val newItem = database.child(Constants.FIREBASE_ITEM).push()
         val chosenRestaurantItem = ChosenRestaurantItem.create()
         chosenRestaurantItem.id = newItem.key
         chosenRestaurantItem.username = username
         chosenRestaurantItem.restaurant = restaurant
+        chosenRestaurantItem.liked = liked
         chosenRestaurantItem.photo = photoUrl
         newItem.setValue(chosenRestaurantItem)
     }
 
-    fun updateItem(itemKey: String, restaurant: String) {
+    fun updateRestaurant(itemKey: String, restaurant: String) {
         val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
         itemReference.child("restaurant").setValue(restaurant);
+    }
+
+    fun updateLiked(itemKey: String, liked: MutableList<String>) {
+        val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
+        itemReference.child("liked").setValue(liked.joinToString(" , "));
     }
 
     fun deleteItem(itemKey: String) {

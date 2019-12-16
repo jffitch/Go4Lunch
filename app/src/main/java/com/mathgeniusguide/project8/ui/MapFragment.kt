@@ -26,6 +26,7 @@ class MapFragment: Fragment(), OnMapReadyCallback {
     var googleMap: GoogleMap? = null
     var latitude = 91.0
     var longitude = 181.0
+    lateinit var act: MainActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -34,8 +35,9 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).toolbar.visibility = View.VISIBLE
-        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
+        act = activity as MainActivity
+        act.toolbar.visibility = View.VISIBLE
+        act.autocompleteFragment.view?.visibility = View.GONE
         if (map != null) {
             map.onCreate(null)
             map.onResume()
@@ -45,34 +47,34 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        (activity as MainActivity).latitude.observe(viewLifecycleOwner, Observer {
+        act.latitude.observe(viewLifecycleOwner, Observer {
             if (googleMap != null && latitude == 91.0 && it != null) {
                 latitude = it
                 setLocation(latitude, longitude)
-                if ((activity as MainActivity).placeList.value != null) {
-                    getMarkers((activity as MainActivity).placeList.value!!)
+                if (act.placeList.value != null) {
+                    getMarkers(act.placeList.value!!)
                 }
             }
         })
-        (activity as MainActivity).longitude.observe(viewLifecycleOwner, Observer {
+        act.longitude.observe(viewLifecycleOwner, Observer {
             if (googleMap != null && longitude == 181.0 && it != null) {
                 longitude = it
                 setLocation(latitude, longitude)
-                if ((activity as MainActivity).placeList.value != null) {
-                    getMarkers((activity as MainActivity).placeList.value!!)
+                if (act.placeList.value != null) {
+                    getMarkers(act.placeList.value!!)
                 }
             }
         })
-        (activity as MainActivity).placeList.observe(viewLifecycleOwner, Observer {
+        act.placeList.observe(viewLifecycleOwner, Observer {
             if (googleMap != null) {
                 getMarkers(it)
             }
         })
-        (activity as MainActivity).viewModel.isDataLoading.observe(viewLifecycleOwner, Observer {
+        act.viewModel.isDataLoading.observe(viewLifecycleOwner, Observer {
             progressScreen.visibility = if(it) View.VISIBLE else View.GONE
         })
-        (activity as MainActivity).viewModel.detailsProgress.observe(viewLifecycleOwner, Observer {
-            progressCounter.text = "${it}/${(activity as MainActivity).viewModel.detailsCount.value}"
+        act.viewModel.detailsProgress.observe(viewLifecycleOwner, Observer {
+            progressCounter.text = "${it}/${act.viewModel.detailsCount.value}"
         })
     }
 
@@ -101,9 +103,9 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         MapsInitializer.initialize(context)
         googleMap = p0
         googleMap!!.setOnInfoWindowClickListener {marker->
-            val placeList = (activity as MainActivity).placeList.value
+            val placeList = act.placeList.value
             if (placeList != null && placeList.any{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}) {
-                (activity as MainActivity).chosenPlace = placeList.first{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}
+                act.chosenPlace = placeList.first{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}
                 findNavController().navigate(R.id.load_page_from_map)
             }
         }

@@ -21,6 +21,8 @@ class SettingsFragment: Fragment() {
     var pref: SharedPreferences? = null
     var radius = 3000
     var orderBy = Constants.BY_DISTANCE
+    lateinit var act: MainActivity
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.settings, container, false)
@@ -28,8 +30,9 @@ class SettingsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).toolbar.visibility = View.VISIBLE
-        (activity as MainActivity).autocompleteFragment.view?.visibility = View.GONE
+        act = activity as MainActivity
+        act.toolbar.visibility = View.VISIBLE
+        act.autocompleteFragment.view?.visibility = View.GONE
         pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
         radius = pref?.getInt("radius", 3000) ?: 3000
         orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
