@@ -19,6 +19,11 @@
             app:destination="@id/settings"
             app:enterAnim="@anim/push_left_in"
             app:exitAnim="@anim/push_left_out" />
+    <action
+            android:id="@+id/action_chat"
+            app:destination="@id/chat"
+            app:enterAnim="@anim/push_left_in"
+            app:exitAnim="@anim/push_left_out" />
     <fragment
             android:id="@+id/map_view"
             android:name="com.mathgeniusguide.project8.ui.MapFragment"
@@ -66,4 +71,9 @@
             android:name="com.mathgeniusguide.project8.ui.SettingsFragment"
             android:label="@string/settings"
             tools:layout="@layout/settings" />
+    <fragment
+            android:id="@+id/chat"
+            android:name="com.mathgeniusguide.project8.ui.ChatFragment"
+            android:label="@string/chat"
+            tools:layout="@layout/chat_view" />
 </navigation>

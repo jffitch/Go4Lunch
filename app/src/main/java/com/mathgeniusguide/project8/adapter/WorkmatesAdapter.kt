@@ -4,14 +4,17 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.ChosenRestaurantItem
 import com.mathgeniusguide.project8.util.NearbyPlace
 import kotlinx.android.synthetic.main.workmates_item.view.*
 
-class WorkmatesAdapter (private val items: List<ChosenRestaurantItem>, val context: Context, val placeList: List<NearbyPlace>?) : RecyclerView.Adapter<WorkmatesAdapter.ViewHolder> () {
+class WorkmatesAdapter (private val items: List<ChosenRestaurantItem>, val context: Context, val placeList: List<NearbyPlace>?, val navController: NavController) : RecyclerView.Adapter<WorkmatesAdapter.ViewHolder> () {
     override fun getItemCount(): Int {
         return items.size
     }
@@ -32,6 +35,10 @@ class WorkmatesAdapter (private val items: List<ChosenRestaurantItem>, val conte
             holder.userChoice.setTextColor(context.resources.getColor(R.color.gray))
         }
         holder.userChoice.text = if (restaurantName == "") String.format(context.resources.getString(R.string.hasnt_decided_yet), i.username) else String.format(context.resources.getString(R.string.is_eating_at), i.username, restaurantName)
+        holder.parent.setOnClickListener {
+            (context as MainActivity).chattingWith = i.id ?: ""
+            navController.navigate(R.id.action_chat)
+        }
     }
 
     class ViewHolder (view : View) : RecyclerView.ViewHolder(view) {

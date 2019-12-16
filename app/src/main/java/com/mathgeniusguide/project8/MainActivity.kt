@@ -46,6 +46,7 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
+import com.mathgeniusguide.project8.database.ChatItem
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var chosenPlace: NearbyPlace? = null
     var fetched = false
     var restaurantsLiked = mutableListOf<String>()
+    var chattingWith = ""
 
     // Firebase variables
     lateinit var googleApiClient: GoogleApiClient
@@ -70,6 +72,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var photoUrl = ""
     lateinit var database: DatabaseReference
     var chosenRestaurantList = ArrayList<ChosenRestaurantItem>()
+    var chatList = ArrayList<ChatItem>()
 
     // Location
     var locationEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
@@ -207,11 +210,11 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     private fun addDataToList(dataSnapshot: DataSnapshot) {
-        val items = dataSnapshot.child(Constants.FIREBASE_ITEM).children.iterator()
+        val restaurants = dataSnapshot.child(Constants.CHOSEN_RESTAURANTS).children.iterator()
         //check if the collection has any items or not
-        while (items.hasNext()) {
+        while (restaurants.hasNext()) {
             //get current item
-            val currentItem = items.next()
+            val currentItem = restaurants.next()
             val chosenRestaurantItem = ChosenRestaurantItem.create()
             //get current data in a map
             val map = currentItem.getValue() as HashMap<String, Any>
@@ -221,20 +224,36 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             chosenRestaurantItem.restaurant = map.get("restaurant") as String?
             chosenRestaurantItem.liked = map.get("liked") as String?
             chosenRestaurantItem.photo = map.get("photo") as String?
-            chosenRestaurantList.add(chosenRestaurantItem);
+            chosenRestaurantList.add(chosenRestaurantItem)
         }
 
         if (username != ANONYMOUS) {
             if (chosenRestaurantList.none { it.username == username }) {
-                createItem(username, "", "", photoUrl)
+                createRestaurant(username, "", "", photoUrl)
             }
             userkey = chosenRestaurantList.first { it.username == username }.id!!
             restaurantsLiked = chosenRestaurantList.first { it.username == username }.liked!!.split(" , ").toMutableList()
         }
+
+        val chats = dataSnapshot.child(Constants.CHATS).children.iterator()
+        //check if the collection has any items or not
+        while (chats.hasNext()) {
+            //get current item
+            val currentItem = chats.next()
+            val chatItem = ChatItem.create()
+            //get current data in a map
+            val map = currentItem.getValue() as HashMap<String, Any>
+            //key will return Firebase ID
+            chatItem.id = currentItem.key
+            chatItem.from = map.get("from") as String?
+            chatItem.to = map.get("to") as String?
+            chatItem.text = map.get("text") as String?
+            chatList.add(chatItem);
+        }
     }
 
-    fun createItem(username: String, restaurant: String, liked: String, photo: String) {
-        val newItem = database.child(Constants.FIREBASE_ITEM).push()
+    fun createRestaurant(username: String, restaurant: String, liked: String, photo: String) {
+        val newItem = database.child(Constants.CHOSEN_RESTAURANTS).push()
         val chosenRestaurantItem = ChosenRestaurantItem.create()
         chosenRestaurantItem.id = newItem.key
         chosenRestaurantItem.username = username
@@ -245,17 +264,32 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     fun updateRestaurant(itemKey: String, restaurant: String) {
-        val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
+        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
         itemReference.child("restaurant").setValue(restaurant);
     }
 
     fun updateLiked(itemKey: String, liked: MutableList<String>) {
-        val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
+        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
         itemReference.child("liked").setValue(liked.joinToString(" , "));
     }
 
-    fun deleteItem(itemKey: String) {
-        val itemReference = database.child(Constants.FIREBASE_ITEM).child(itemKey)
+    fun deleteRestaurant(itemKey: String) {
+        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
+        itemReference.removeValue()
+    }
+
+    fun createChat(from: String, to: String, text: String) {
+        val newItem = database.child(Constants.CHATS).push()
+        val chatItem = ChatItem.create()
+        chatItem.id = newItem.key
+        chatItem.from = from
+        chatItem.to = to
+        chatItem.text = text
+        newItem.setValue(chatItem)
+    }
+
+    fun deleteChat(itemKey: String) {
+        val itemReference = database.child(Constants.CHATS).child(itemKey)
         itemReference.removeValue()
     }
 

@@ -50,7 +50,7 @@ class RestaurantFragment: Fragment() {
             restaurantWorkmatesRVPlaceholder.visibility = View.VISIBLE
         } else {
             restaurantWorkmatesRV.layoutManager = LinearLayoutManager(context)
-            restaurantWorkmatesRV.adapter = RestaurantWorkmatesAdapter(list, context!!)
+            restaurantWorkmatesRV.adapter = RestaurantWorkmatesAdapter(list, context!!, findNavController())
         }
         restaurantCheckbox.isChecked = chosenPlace.id == act.chosenRestaurantList.first { it.username == act.username }.restaurant
         isLiked = act.restaurantsLiked.any { it == chosenPlace.id }

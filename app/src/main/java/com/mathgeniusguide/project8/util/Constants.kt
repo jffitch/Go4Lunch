@@ -5,7 +5,8 @@ object Constants {
     const val BASE_URL = "https://maps.googleapis.com/maps/api/place/"
     const val PREF_LOCATION = "com.mathgeniusguide.go4lunch.pref"
     const val FIELDS = "place_id,formatted_address,formatted_phone_number,geometry/location,website,name,rating,opening_hours,photo"
-    const val FIREBASE_ITEM: String = "chosen_restaurants"
+    const val CHOSEN_RESTAURANTS: String = "chosen_restaurants"
+    const val CHATS: String = "chats"
     const val BY_DISTANCE = 0
     const val BY_RATING = 1
     const val BY_WORKMATES = 2

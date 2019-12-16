@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
@@ -28,7 +29,7 @@ class WorkmatesFragment: Fragment() {
         super.onActivityCreated(savedInstanceState)
         if (act.chosenRestaurantList != null) {
             workmatesRV.layoutManager = LinearLayoutManager(context)
-            workmatesRV.adapter = WorkmatesAdapter(act.chosenRestaurantList.sortedByDescending{it.restaurant}, context!!, act.placeList.value)
+            workmatesRV.adapter = WorkmatesAdapter(act.chosenRestaurantList.sortedByDescending{it.restaurant}, context!!, act.placeList.value, findNavController())
         }
     }
 
