@@ -45,7 +45,8 @@ class ListFragment: Fragment() {
                 Constants.BY_WORKMATES -> placeList.sortedByDescending { it.workmates }
                 Constants.BY_NAME -> placeList.sortedBy { it.name }
                 else -> placeList.sortedBy { it.distance }
-            }
+            }.sortedBy { !act.restaurantsLiked.contains(it.id) }
+
             listViewRV.adapter = PlaceAdapter(sortedList, context!!, findNavController())
         }
     }
