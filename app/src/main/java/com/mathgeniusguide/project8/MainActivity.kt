@@ -47,6 +47,7 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.mathgeniusguide.project8.database.ChatItem
+import java.text.SimpleDateFormat
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
@@ -248,6 +249,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             chatItem.from = map.get("from") as String?
             chatItem.to = map.get("to") as String?
             chatItem.text = map.get("text") as String?
+            chatItem.timestamp = map.get("timestamp") as String?
             chatList.add(chatItem);
         }
     }
@@ -259,18 +261,18 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         chosenRestaurantItem.username = username
         chosenRestaurantItem.restaurant = restaurant
         chosenRestaurantItem.liked = liked
-        chosenRestaurantItem.photo = photoUrl
+        chosenRestaurantItem.photo = photo
         newItem.setValue(chosenRestaurantItem)
     }
 
     fun updateRestaurant(itemKey: String, restaurant: String) {
         val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
-        itemReference.child("restaurant").setValue(restaurant);
+        itemReference.child("restaurant").setValue(restaurant)
     }
 
     fun updateLiked(itemKey: String, liked: MutableList<String>) {
         val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
-        itemReference.child("liked").setValue(liked.joinToString(" , "));
+        itemReference.child("liked").setValue(liked.joinToString(" , "))
     }
 
     fun deleteRestaurant(itemKey: String) {
@@ -279,12 +281,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     fun createChat(from: String, to: String, text: String) {
+        val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+        val timestamp = sdf.format(Date())
         val newItem = database.child(Constants.CHATS).push()
         val chatItem = ChatItem.create()
         chatItem.id = newItem.key
         chatItem.from = from
         chatItem.to = to
         chatItem.text = text
+        chatItem.timestamp = timestamp
         newItem.setValue(chatItem)
     }
 
@@ -359,7 +364,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         val todayMinute = today.get(Calendar.MINUTE)
         val dayAndTime = "${todayDay}${todayHour}${todayMinute}".toInt()
         if (times.open_now) {
-            val periods = times.periods.map { "${it.close.day}${it.close.time}".toInt() }.sorted()
+            val periods = times.periods.filter {it.close != null && it.close.day != null && it.close.time != null }.map { "${it.close!!.day}${it.close.time}".toInt() }.sorted()
             val periodsAfter = periods.filter { it > dayAndTime }
             val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
             val diff = timeDiff(dayAndTime, next)
@@ -377,7 +382,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             }
             return resources.getString(R.string.open_24)
         } else {
-            val periods = times.periods.map { "${it.open.day}${it.open.time}".toInt() }
+            val periods = times.periods.filter {it.close != null && it.close.day != null && it.close.time != null }.map { "${it.open!!.day}${it.open.time}".toInt() }
             val periodsAfter = periods.filter { it > dayAndTime }
             val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
             val diff = timeDiff(dayAndTime, next)

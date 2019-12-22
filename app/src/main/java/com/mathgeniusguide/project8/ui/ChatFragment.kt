@@ -12,6 +12,8 @@ import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.ChatItem
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.chat_view.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ChatFragment : Fragment() {
     lateinit var act: MainActivity
@@ -33,20 +35,24 @@ class ChatFragment : Fragment() {
         act.autocompleteFragment.view?.visibility = View.GONE
 
         chatRV.layoutManager = LinearLayoutManager(context)
-        chatList = act.chatList.filter { (it.from == act.userkey && it.to == act.chattingWith) || (it.from == act.chattingWith && it.to == act.userkey)}.toMutableList()
+        chatList = act.chatList.filter { (it.from == act.userkey && it.to == act.chattingWith) || (it.from == act.chattingWith && it.to == act.userkey)}.sortedBy { it.timestamp }.toMutableList()
         chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.chosenRestaurantList.first { it.id == act.chattingWith }.photo)
 
         sendButton.setOnClickListener {
             val text = chatField.text.toString()
             chatField.setText("")
+            val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+            val timestamp = sdf.format(Date())
             val chatItem = ChatItem.create()
             chatItem.id = ""
             chatItem.from = act.userkey
             chatItem.to = act.chattingWith
             chatItem.text = text
+            chatItem.timestamp = timestamp
             chatList.add(chatItem)
             act.chatList.add(chatItem)
             act.createChat(act.userkey, act.chattingWith, text)
+            chatList.sortBy { it.timestamp }
             chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.chosenRestaurantList.first { it.id == act.chattingWith }.photo)
         }
     }
