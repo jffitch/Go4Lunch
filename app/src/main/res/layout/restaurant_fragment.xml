@@ -15,7 +15,7 @@
             app:layout_constraintBottom_toTopOf="@id/restaurantInfo" />
 
     <include
-            layout="@layout/restaurant_info"
+            layout="@layout/restaurant_info_include"
             android:id="@+id/restaurantInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,7 +23,7 @@
             app:layout_constraintBottom_toTopOf="@id/restaurantTabs" />
 
     <include
-            layout="@layout/restaurant_tabs"
+            layout="@layout/restaurant_tabs_include"
             android:id="@+id/restaurantTabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

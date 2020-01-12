@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.ChatItem
+import com.mathgeniusguide.project8.util.Functions.createChat
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.chat_view.*
+import kotlinx.android.synthetic.main.chat_fragment.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -25,7 +26,7 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.chat_view, container, false)
+        return inflater.inflate(R.layout.chat_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,7 +37,7 @@ class ChatFragment : Fragment() {
 
         chatRV.layoutManager = LinearLayoutManager(context)
         chatList = act.chatList.filter { (it.from == act.userkey && it.to == act.chattingWith) || (it.from == act.chattingWith && it.to == act.userkey)}.sortedBy { it.timestamp }.toMutableList()
-        chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.chosenRestaurantList.first { it.id == act.chattingWith }.photo)
+        chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.chosenRestaurantList.first { it.id == act.chattingWith }.photo, resources)
 
         sendButton.setOnClickListener {
             val text = chatField.text.toString()
@@ -51,9 +52,9 @@ class ChatFragment : Fragment() {
             chatItem.timestamp = timestamp
             chatList.add(chatItem)
             act.chatList.add(chatItem)
-            act.createChat(act.userkey, act.chattingWith, text)
+            createChat(act.userkey, act.chattingWith, text, act.database)
             chatList.sortBy { it.timestamp }
-            chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.chosenRestaurantList.first { it.id == act.chattingWith }.photo)
+            chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.chosenRestaurantList.first { it.id == act.chattingWith }.photo, resources)
         }
     }
 }

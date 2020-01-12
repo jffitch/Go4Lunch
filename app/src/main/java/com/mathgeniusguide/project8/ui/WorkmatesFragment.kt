@@ -11,7 +11,7 @@ import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.WorkmatesAdapter
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.workmates.*
+import kotlinx.android.synthetic.main.workmates_fragment.*
 
 class WorkmatesFragment: Fragment() {
     lateinit var act: MainActivity
@@ -22,7 +22,7 @@ class WorkmatesFragment: Fragment() {
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.workmates, container, false)
+        return inflater.inflate(R.layout.workmates_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

@@ -20,7 +20,7 @@ import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.util.NearbyPlace
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.map_view.*
+import kotlinx.android.synthetic.main.map_fragment.*
 
 class MapFragment: Fragment(), OnMapReadyCallback {
     var googleMap: GoogleMap? = null
@@ -30,7 +30,7 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.map_view, container, false)
+        return inflater.inflate(R.layout.map_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

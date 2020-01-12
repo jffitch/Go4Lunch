@@ -9,7 +9,7 @@ import com.google.android.gms.auth.api.Auth
 import com.mathgeniusguide.project8.R
 import android.widget.Toast
 import android.util.Log
-import kotlinx.android.synthetic.main.login.*
+import kotlinx.android.synthetic.main.login_fragment.*
 import com.mathgeniusguide.project8.MainActivity
 import android.content.Intent
 import androidx.navigation.fragment.findNavController
@@ -37,7 +37,7 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.login, container, false)
+        return inflater.inflate(R.layout.login_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

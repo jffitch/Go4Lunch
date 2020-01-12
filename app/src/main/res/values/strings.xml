@@ -49,6 +49,9 @@
 	<string name="friday">Friday</string>
 	<string name="saturday">Saturday</string>
 
+	<!--chat times-->
+	<string name="date_at_time">%1$s at %2$s</string>
+
 	<!--error messages-->
 	<string name="no_lunch_chosen">You have not yet chosen a place to eat.</string>
 	<string name="load_chosen_failed">Failed to load list of chosen restaurants.</string>

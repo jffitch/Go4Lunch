@@ -14,8 +14,7 @@ import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.WorkmatesAdapter
 import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.settings.*
-import kotlinx.android.synthetic.main.workmates.*
+import kotlinx.android.synthetic.main.settings_fragment.*
 
 class SettingsFragment: Fragment() {
     var pref: SharedPreferences? = null
@@ -25,7 +24,7 @@ class SettingsFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.settings, container, false)
+        return inflater.inflate(R.layout.settings_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -18,10 +18,12 @@ import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.RestaurantWorkmatesAdapter
 import com.mathgeniusguide.project8.util.Constants
+import com.mathgeniusguide.project8.util.Functions.updateLiked
+import com.mathgeniusguide.project8.util.Functions.updateRestaurant
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.restaurant_info.*
-import kotlinx.android.synthetic.main.restaurant_tabs.*
-import kotlinx.android.synthetic.main.restaurant_view.*
+import kotlinx.android.synthetic.main.restaurant_info_include.*
+import kotlinx.android.synthetic.main.restaurant_tabs_include.*
+import kotlinx.android.synthetic.main.restaurant_fragment.*
 
 class RestaurantFragment: Fragment() {
     var isLiked = false;
@@ -29,7 +31,7 @@ class RestaurantFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.restaurant_view, container, false)
+        return inflater.inflate(R.layout.restaurant_fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,7 +58,7 @@ class RestaurantFragment: Fragment() {
         isLiked = act.restaurantsLiked.any { it == chosenPlace.id }
         setTabColor(isLiked)
         restaurantCheckbox.setOnClickListener {
-            act.updateRestaurant(act.userkey, if ((it as CheckBox).isChecked) chosenPlace.id else "")
+            updateRestaurant(act.userkey, if ((it as CheckBox).isChecked) chosenPlace.id else "", act.database)
             act.chosenRestaurantList.first { it.username == act.username }.restaurant = if ((it as CheckBox).isChecked) chosenPlace.id else ""
         }
         callTab.setOnClickListener {
@@ -76,7 +78,7 @@ class RestaurantFragment: Fragment() {
                 act.restaurantsLiked = act.restaurantsLiked.filter { it != chosenPlace.id }.toMutableList()
             }
             setTabColor(isLiked)
-            act.updateLiked(act.userkey, act.restaurantsLiked)
+            updateLiked(act.userkey, act.restaurantsLiked, act.database)
         }
         websiteTab.setOnClickListener {
             if (chosenPlace.website == null) {
