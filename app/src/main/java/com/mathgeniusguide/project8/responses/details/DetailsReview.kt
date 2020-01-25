@@ -1,4 +1,4 @@
-package com.mathgeniusguide.project8.responses.details
+/*package com.mathgeniusguide.project8.responses.details
 
 data class DetailsReview(
     val author_name: String,
@@ -9,4 +9,4 @@ data class DetailsReview(
     val relative_time_description: String,
     val text: String,
     val time: Int
-)
+)*/

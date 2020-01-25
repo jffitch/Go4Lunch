@@ -23,10 +23,13 @@ class RestaurantWorkmatesAdapter (private val items: List<ChosenRestaurantItem>,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val i = items[position]
+        // if photo exists, load photo
         if (!i.photo.isNullOrEmpty()) {
             Glide.with(context).load(i.photo).into(holder.userImage)
         }
+        // show "${name} is joining" if workmate is joining
         holder.userChoice.text = String.format(context.resources.getString(R.string.is_joining), i.username)
+        // when clicked, go to chat page to chat with this workmate
         holder.parent.setOnClickListener {
             (context as MainActivity).chattingWith = i.id ?: ""
             navController.navigate(R.id.action_chat)

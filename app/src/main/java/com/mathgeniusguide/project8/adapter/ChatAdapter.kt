@@ -22,6 +22,11 @@ class ChatAdapter (private val items: List<ChatItem>, val context: Context, val 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val i = items[position]
+        // load your photo and their photo into ImageView
+        // load chat time
+        // load chat text
+        // if you sent this chat, show your image
+        // if they sent this chat, show their image
         Glide.with(context).load(yourPhoto).into(holder.yourImage)
         holder.yourImage.visibility = if (i.from == userkey) View.VISIBLE else View.GONE
         holder.yourChatTime.visibility = if (i.from == userkey) View.VISIBLE else View.INVISIBLE

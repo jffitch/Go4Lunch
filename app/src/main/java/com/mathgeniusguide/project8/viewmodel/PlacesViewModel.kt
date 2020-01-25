@@ -2,10 +2,10 @@ package com.mathgeniusguide.project8.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import com.mathgeniusguide.go4lunch.database.RestaurantDao
 import com.mathgeniusguide.go4lunch.database.RestaurantDatabase
@@ -13,15 +13,16 @@ import com.mathgeniusguide.go4lunch.database.RestaurantItem
 import com.mathgeniusguide.project8.api.Api
 import com.mathgeniusguide.project8.connectivity.ConnectivityInterceptor
 import com.mathgeniusguide.project8.connectivity.NoConnectivityException
-import com.mathgeniusguide.project8.connectivity.toRestaurantItem
+import com.mathgeniusguide.project8.util.toRestaurantItem
 import com.mathgeniusguide.project8.responses.details.DetailsResponse
-import com.mathgeniusguide.project8.responses.place.PlaceResponse
 import com.mathgeniusguide.project8.util.Constants
 import com.mathgeniusguide.project8.util.Functions.nearbyPlaceDetails
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PlacesViewModel(application: Application) : AndroidViewModel(application) {
     // declare MutableLiveData variables for use in this class
@@ -35,7 +36,6 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
 
     // Room Database
     private val _savedRestaurants = MutableLiveData<List<RestaurantItem>>()
-    private var savedIds = emptyList<String>()
     private var db: RestaurantDatabase? = null
     private var dao: RestaurantDao? = null
 
@@ -56,33 +56,28 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _savedRestaurants
 
     // fetch nearby places
-    fun fetchPlaces(latitude: Double, longitude: Double, radius: Int, context: Context) {
+    fun fetchPlaces(latitude: Double, longitude: Double, radius: Int, recentIds: List<String>, expiredIds: List<String>, context: Context) {
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
         _isDataLoading.postValue(true)
         viewModelScope.launch {
             try {
+                // load first page of results
                 var loadedPlaces = Api.invoke(connectivityInterceptor)
                     .getPlaces("${latitude},${longitude}", radius, "restaurant").body()
                 placeList.addAll(loadedPlaces!!.results.map { it.place_id })
+                // if next page exists, load next page until next page no longer exists
                 var token: String? = loadedPlaces.next_page_token
                 while (token != null) {
                     loadedPlaces = Api.invoke(connectivityInterceptor).getNextPage(token).body()
                     placeList.addAll(loadedPlaces!!.results.map { it.place_id })
                     token = loadedPlaces.next_page_token
                 }
-                db = RestaurantDatabase.getDataBase(context)
-                dao = db?.restaurantDao()
-                dao!!.selectIds().observeForever( {
-                    if (it != null) {
-                        savedIds = it
-                        fetchDetails(
-                            placeList.filter { !savedIds.contains(it) },
-                            latitude,
-                            longitude
-                        )
-                    }
-                    _isDataLoadingError.postValue(false)
-                })
+                // fetch details for each place ID from the API and for each expired saved ID, but not for unexpired saved IDs
+                fetchDetails(
+                    (placeList + expiredIds).distinct().filter { !recentIds.contains(it) },
+                    latitude,
+                    longitude
+                )
             } catch (e: NoConnectivityException) {
                 _isDataLoading.postValue(false)
                 _isDataLoadingError.postValue(true)
@@ -96,25 +91,30 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         _isDataLoading.postValue(true)
         viewModelScope.launch {
             try {
+                // set count to number of places to show progress
+                // initialize progress at 0
                 _detailsCount.postValue(placeId.size)
                 _detailsProgress.postValue(0)
                 for (i in placeId) {
                     val detailsLoaded =
                         Api.invoke(connectivityInterceptor).getDetails(i, Constants.FIELDS).body()
                     if (detailsLoaded != null) {
+                        // for each place ID, create a Restaurant Item and add it to the database
                         val nearbyPlace = nearbyPlaceDetails(
                             detailsLoaded.result,
                             latitude,
                             longitude,
                             getApplication<Application>().resources
                         )
-                        insertRestaurantItemIfNotExists(
-                            nearbyPlace.toRestaurantItem(),
+                        insertRestaurantItem(
+                            nearbyPlace.toRestaurantItem(getApplication<Application>().resources),
                             getApplication<Application>().applicationContext
                         )
                     }
+                    // increment loading progress by 1 after loading details for each place ID
                     _detailsProgress.postValue(_detailsProgress.value!! + 1)
                 }
+                // after adding each item to database, fetch all data from database
                 fetchSavedRestaurants(getApplication<Application>().applicationContext)
                 _isDataLoading.postValue(false)
                 _isDataLoadingError.postValue(false)
@@ -126,6 +126,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun fetchOneDetail(placeId: String) {
+        // for fetching details for a single place ID
         _isAutocompleteDataLoading.postValue(true)
         val connectivityInterceptor = ConnectivityInterceptor(getApplication())
         viewModelScope.launch {
@@ -146,6 +147,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun insertRestaurantItemIfNotExists(restaurantItem: RestaurantItem, context: Context) {
+        // run function from DAO
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
             dao = db?.restaurantDao()
@@ -157,7 +159,21 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun insertRestaurantItem(restaurantItem: RestaurantItem, context: Context) {
+        // run function from DAO
+        viewModelScope.launch {
+            db = RestaurantDatabase.getDataBase(context)
+            dao = db?.restaurantDao()
+            Observable.fromCallable({
+                dao?.insertRestaurantItem(restaurantItem)
+            }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
+        }
+    }
+
     fun fetchSavedRestaurants(context: Context) {
+        // fetch all data from database
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
             dao = db?.restaurantDao()

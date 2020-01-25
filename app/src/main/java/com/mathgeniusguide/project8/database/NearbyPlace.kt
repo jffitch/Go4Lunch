@@ -1,4 +1,4 @@
-package com.mathgeniusguide.project8.util
+package com.mathgeniusguide.project8.database
 
 class NearbyPlace () {
     var id = ""

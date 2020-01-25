@@ -52,7 +52,9 @@ class LoginFragment : Fragment() {
                 RC_SIGN_IN
             )
         }
-        callbackManager = CallbackManager.Factory.create();
+        // Initialize Facebook Login button
+        callbackManager = CallbackManager.Factory.create()
+
         facebookButton.setReadPermissions("email", "public_profile")
         facebookButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
@@ -77,7 +79,7 @@ class LoginFragment : Fragment() {
 
         val credential = FacebookAuthProvider.getCredential(token.token)
         act.firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener(activity!!, { task ->
+            .addOnCompleteListener(act) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
@@ -85,13 +87,10 @@ class LoginFragment : Fragment() {
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
-                    Toast.makeText(
-                        context, "Authentication failed.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    // updateUI(null)
+                    Toast.makeText(context, "Authentication failed.",
+                        Toast.LENGTH_SHORT).show()
                 }
-            })
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

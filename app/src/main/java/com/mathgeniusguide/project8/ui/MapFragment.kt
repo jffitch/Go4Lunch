@@ -18,7 +18,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.util.NearbyPlace
+import com.mathgeniusguide.project8.database.NearbyPlace
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.map_fragment.*
 
