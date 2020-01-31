@@ -12,6 +12,8 @@ import android.util.Log
 import kotlinx.android.synthetic.main.login_fragment.*
 import com.mathgeniusguide.project8.MainActivity
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.findNavController
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
@@ -23,6 +25,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_main.*
+import java.security.MessageDigest
 import java.util.*
 
 class LoginFragment : Fragment() {
@@ -72,6 +75,8 @@ class LoginFragment : Fragment() {
                 // ...
             }
         })
+
+        act.drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
     }
 
     private fun handleFacebookAccessToken(token: AccessToken) {

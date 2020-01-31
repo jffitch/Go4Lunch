@@ -9,6 +9,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -49,6 +51,7 @@ import com.mathgeniusguide.project8.util.Constants
 import com.mathgeniusguide.project8.util.Functions.createRestaurant
 import com.mathgeniusguide.project8.util.Functions.nearbyPlaceDetails
 import com.mathgeniusguide.project8.database.NearbyPlace
+import com.mathgeniusguide.project8.util.Functions.coordinateDistance
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
@@ -84,6 +87,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var locationEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
     var latitude = MutableLiveData<Double>()
     var longitude = MutableLiveData<Double>()
+    var radius = 3000
 
     // Room Database
     private var db: RestaurantDatabase? = null
@@ -190,6 +194,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     private fun setUpLocation() {
+        // load saved preference for radius
+        val pref = getSharedPreferences(Constants.PREF_LOCATION, 0)
+        radius = pref?.getInt("radius", 3000) ?: 3000
+
         // initialize location to impossible values
         latitude.postValue(91.0)
         longitude.postValue(181.0)
@@ -237,7 +245,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             }
         })
         viewModel.savedRestaurants.observe(this, Observer { details ->
-            placeList.postValue(details.map { v -> nearbyPlaceDetails(v, latitude.value!!, longitude.value!!) }.toMutableList())
+            placeList.postValue(details.map { v -> nearbyPlaceDetails(v, latitude.value!!, longitude.value!!) }.filter { coordinateDistance(latitude.value!!, longitude.value!!, it.latitude, it.longitude) < radius}.toMutableList())
         })
         viewModel.isAutocompleteDataLoading.observe(this, Observer {
             autocompleteProgressScreen.visibility = if (it) View.VISIBLE else View.GONE
@@ -328,18 +336,17 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     private fun getNearbyPlaces(lat: Double, lng: Double) {
-        // fetch nearby places using saved preference for search radius
-        val pref = getSharedPreferences(Constants.PREF_LOCATION, 0)
-        val radius = pref?.getInt("radius", 3000) ?: 3000
         // load saved IDs from database
         dao!!.selectIds().observeOnce(this, Observer {
             val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
             val now = sdf.format(Date())
             if (it != null) {
+                // ignore IDs that are not within the radius
+                val nearby = it.filter { coordinateDistance(lat, lng, it.latitude!!, it.longitude!!) < radius}
                 // separate saved IDs by expiration date, recentIds = expiration has not passed, expiredIds = expiration has passed
                 // fetch places from API using location and saved IDs
-                val recentIds = it.filter {v -> v.expiration > now}.map {v -> v.id}
-                val expiredIds = it.filter {v -> v.expiration <= now}.map {v -> v.id}
+                val recentIds = nearby.filter {v -> v.expiration > now}.map {v -> v.id}
+                val expiredIds = nearby.filter {v -> v.expiration <= now}.map {v -> v.id}
                 viewModel.fetchPlaces(lat, lng, radius, recentIds, expiredIds,this)
             }
         })
@@ -392,9 +399,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             }
             // navigate to map fragment and make toolbars visible
             navController.navigate(R.id.action_login)
-            drawer_view.visibility = View.VISIBLE
             tabs.visibility = View.VISIBLE
             toolbar.visibility = View.VISIBLE
+            drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
         }
     }
 
@@ -409,10 +416,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         // navigate to login fragment
         // make toolbars invisible
         navController.navigate(R.id.action_logout)
-        drawer_view.visibility = View.GONE
         tabs.visibility = View.GONE
         toolbar.visibility = View.GONE
         autocompleteFragment.view?.visibility = View.GONE
+        drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -448,12 +455,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         // if everything loads correctly and a restaurant has been chosen, go to that restaurant page
         chosenPlace = placeList.value!!.first { it.id == yourRestaurant }
         navController.navigate(R.id.load_page_from_map)
+        drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
 
     private fun settings(): Boolean {
         // go to settings fragment
         navController.navigate(R.id.action_settings)
+        drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
 

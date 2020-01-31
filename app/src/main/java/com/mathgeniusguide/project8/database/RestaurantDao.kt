@@ -20,6 +20,6 @@ interface RestaurantDao{
     @Query("SELECT * FROM RestaurantItem")
     fun selectAll(): LiveData<List<RestaurantItem>>
 
-    @Query("SELECT id, expiration FROM RestaurantItem")
+    @Query("SELECT id, expiration, latitude, longitude FROM RestaurantItem")
     fun selectIds(): LiveData<List<RestaurantItem>>
 }
