@@ -31,7 +31,6 @@ import java.util.*
 class LoginFragment : Fragment() {
     private val TAG = "Go4Lunch"
     private val RC_SIGN_IN = 9001
-    private lateinit var callbackManager: CallbackManager
     lateinit var act: MainActivity
 
     override fun onCreateView(
@@ -56,10 +55,10 @@ class LoginFragment : Fragment() {
             )
         }
         // Initialize Facebook Login button
-        callbackManager = CallbackManager.Factory.create()
+        act.callbackManager = CallbackManager.Factory.create()
 
         facebookButton.setReadPermissions("email", "public_profile")
-        facebookButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+        facebookButton.registerCallback(act.callbackManager, object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
                 Log.d(TAG, "facebook:onSuccess:$loginResult")
                 handleFacebookAccessToken(loginResult.accessToken)
@@ -96,44 +95,5 @@ class LoginFragment : Fragment() {
                         Toast.LENGTH_SHORT).show()
                 }
             }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data);
-
-        // PlaceResult returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
-            if (result.isSuccess) {
-                // Google Sign-In was successful, authenticate with Firebase
-                firebaseAuthWithGoogle(result.signInAccount!!)
-            } else {
-                // Google Sign-In failed
-                Log.e(TAG, "Google Sign-In failed.")
-            }
-        }
-    }
-
-    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
-        Log.d(TAG, "firebaseAuthWithGooogle:" + acct.id!!)
-        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        act.firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener(activity!!, { task ->
-                Log.d(TAG, "signInWithCredential:onComplete:${task.isSuccessful}")
-
-                // If sign in fails, display a message to the user. If sign in succeeds
-                // the auth state listener will be notified and logic to handle the
-                // signed in user can be handled in the listener.
-                if (!task.isSuccessful) {
-                    Log.w(TAG, "signInWithCredential", task.exception)
-                    Toast.makeText(
-                        context, "Authentication failed.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    act.login(act.firebaseAuth.currentUser)
-                }
-            })
     }
 }

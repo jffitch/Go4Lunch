@@ -51,6 +51,9 @@ object Functions {
         if (times.open_now) {
             val periods = times.periods.filter {it.close != null && it.close.day != null && it.close.time != null }.map { "${it.close!!.day}${it.close.time}".toInt() }.sorted()
             val periodsAfter = periods.filter { it > dayAndTime }
+            if (periods.isEmpty()) {
+                return resources.getString(R.string.open_24_7)
+            }
             val next = if (periodsAfter.isEmpty()) periods[0] else periodsAfter[0]
             val diff = timeDiff(dayAndTime, next)
             val nextHour = (next / 100) % 100

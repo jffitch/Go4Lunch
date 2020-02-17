@@ -2,6 +2,7 @@ package com.mathgeniusguide.project8
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -29,7 +30,10 @@ import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import com.bumptech.glide.Glide
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
 import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -40,6 +44,7 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import com.mathgeniusguide.go4lunch.database.RestaurantDao
 import com.mathgeniusguide.go4lunch.database.RestaurantDatabase
@@ -70,6 +75,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var fetched = false
     var restaurantsLiked = mutableListOf<String>()
     var chattingWith = ""
+    lateinit var callbackManager: CallbackManager
+
 
     // Firebase variables
     lateinit var googleApiClient: GoogleApiClient
@@ -145,9 +152,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseUser = firebaseAuth.currentUser
         login(firebaseUser)
-        // retrieve data from firebase database
-        database = FirebaseDatabase.getInstance().reference
-        database.orderByKey().addListenerForSingleValueEvent(itemListener)
     }
 
     private fun setUpRoomDatabase() {
@@ -397,6 +401,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 photoUrl = user.photoUrl.toString()
                 Glide.with(this).load(photoUrl).into(header.findViewById(R.id.userImage))
             }
+            // retrieve data from firebase database
+            database = FirebaseDatabase.getInstance().reference
+            database.orderByKey().addListenerForSingleValueEvent(itemListener)
             // navigate to map fragment and make toolbars visible
             navController.navigate(R.id.action_login)
             tabs.visibility = View.VISIBLE
@@ -472,6 +479,46 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show()
     }
 
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // PlaceResult returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
+            if (result.isSuccess) {
+                // Google Sign-In was successful, authenticate with Firebase
+                firebaseAuthWithGoogle(result.signInAccount!!)
+            } else {
+                // Google Sign-In failed
+                Log.e(TAG, "Google Sign-In failed.")
+            }
+        } else {
+            callbackManager.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+        Log.d(TAG, "firebaseAuthWithGooogle:" + acct.id!!)
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this, { task ->
+                Log.d(TAG, "signInWithCredential:onComplete:${task.isSuccessful}")
+
+                // If sign in fails, display a message to the user. If sign in succeeds
+                // the auth state listener will be notified and logic to handle the
+                // signed in user can be handled in the listener.
+                if (!task.isSuccessful) {
+                    Log.w(TAG, "signInWithCredential", task.exception)
+                    Toast.makeText(
+                        this, "Authentication failed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    login(firebaseAuth.currentUser)
+                }
+            })
+    }
     override fun onProviderDisabled(provider: String?) {
     }
 
