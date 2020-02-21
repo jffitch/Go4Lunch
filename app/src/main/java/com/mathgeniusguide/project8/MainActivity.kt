@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     val viewModel by lazy { ViewModelProviders.of(this).get(PlacesViewModel::class.java) }
     lateinit var navController: NavController
     private val TAG = "Go4Lunch"
-    private val RC_SIGN_IN = 9001
     private val ANONYMOUS = "anonymous"
     lateinit var locationManager: LocationManager
     val placeList = MutableLiveData<MutableList<NearbyPlace>>()
@@ -482,10 +481,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        // PlaceResult returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
+        val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
+        if (result != null) {
             if (result.isSuccess) {
                 // Google Sign-In was successful, authenticate with Firebase
                 firebaseAuthWithGoogle(result.signInAccount!!)

@@ -24,6 +24,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.activity_main.*
 import java.security.MessageDigest
 import java.util.*
