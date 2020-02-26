@@ -1,16 +1,16 @@
 package com.mathgeniusguide.project8.util
 
+import android.content.Context
 import android.content.res.Resources
-import com.google.firebase.database.DatabaseReference
+import androidx.work.*
 import com.mathgeniusguide.go4lunch.database.RestaurantItem
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.database.ChatItem
-import com.mathgeniusguide.project8.database.ChosenRestaurantItem
 import com.mathgeniusguide.project8.database.NearbyPlace
 import com.mathgeniusguide.project8.responses.details.DetailsOpeningHours
 import com.mathgeniusguide.project8.responses.details.DetailsResult
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 object Functions {
     fun chatTime(timeStamp: String?, resources: Resources): String {
@@ -119,6 +119,18 @@ object Functions {
         return (if (endMinutes < startMinutes) 10080 else 0) + endMinutes - startMinutes
     }
 
+    fun timeDelay(start: String, end: String): Long {
+        val startArray = start.split(":")
+        val endArray = end.split(":")
+
+        val dayDelay = if (start > end) 86400 else 0
+        val hourDelay = (endArray[0].toInt() - startArray[0].toInt()) * 3600
+        val minuteDelay = (endArray[1].toInt() - startArray[1].toInt()) * 60
+        val secondDelay = endArray[2].toInt() - startArray[2].toInt()
+
+        return (dayDelay + hourDelay + minuteDelay + secondDelay).toLong()
+    }
+
     fun nearbyPlaceDetails(result: DetailsResult, latitude: Double, longitude: Double, resources: Resources): NearbyPlace {
         // for loading places from API
         val nearbyPlace = NearbyPlace()
@@ -176,56 +188,31 @@ object Functions {
         return (111319.5 * Math.sqrt(latDiff * latDiff + lngDiff * lngDiff)).toInt()
     }
 
-    fun createRestaurant(username: String, restaurant: String, liked: String, photo: String, database: DatabaseReference) {
-        // create restaurant entry for FireBase
-        // id created automatically
-        val newItem = database.child(Constants.CHOSEN_RESTAURANTS).push()
-        val chosenRestaurantItem = ChosenRestaurantItem.create()
-        chosenRestaurantItem.id = newItem.key
-        chosenRestaurantItem.username = username
-        chosenRestaurantItem.restaurant = restaurant
-        chosenRestaurantItem.liked = liked
-        chosenRestaurantItem.photo = photo
-        newItem.setValue(chosenRestaurantItem)
-    }
+    fun setNotificationAlarm(turnOn: Boolean, triggerTime: String, username: String, context: Context) {
+        val workManager = WorkManager.getInstance(context)
+        val dateSdf = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+        val timeSdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
-    fun updateRestaurant(itemKey: String, restaurant: String, database: DatabaseReference) {
-        // update chosen restaurant in FireBase
-        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
-        itemReference.child("restaurant").setValue(restaurant)
-    }
+        val time = timeSdf.format(Date())
+        // name the work as the date that it will trigger
+        // if triggerTime already passed today, it will trigger tomorrow
+        val date = dateSdf.format(Date(Date().time + if (triggerTime < time) 86400000 else 0))
 
-    fun updateLiked(itemKey: String, liked: MutableList<String>, database: DatabaseReference) {
-        // update liked restaurants in FireBase
-        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
-        itemReference.child("liked").setValue(liked.joinToString(" , "))
-    }
-
-    fun deleteRestaurant(itemKey: String, database: DatabaseReference) {
-        // delete restaurant entry in FireBase
-        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
-        itemReference.removeValue()
-    }
-
-    fun createChat(from: String, to: String, text: String, database: DatabaseReference) {
-        // create chat entry in FireBase
-        // id created automatically
-        // timestamp set to now
-        val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
-        val timestamp = sdf.format(Date())
-        val newItem = database.child(Constants.CHATS).push()
-        val chatItem = ChatItem.create()
-        chatItem.id = newItem.key
-        chatItem.from = from
-        chatItem.to = to
-        chatItem.text = text
-        chatItem.timestamp = timestamp
-        newItem.setValue(chatItem)
-    }
-
-    fun deleteChat(itemKey: String, database: DatabaseReference) {
-        // delete chat entry in FireBase
-        val itemReference = database.child(Constants.CHATS).child(itemKey)
-        itemReference.removeValue()
+        val delay = timeDelay(time, triggerTime)
+        if (turnOn) {
+            val constraints = Constraints.Builder()
+                .build()
+            val data = Data.Builder()
+                .putString("username", username)
+                .build()
+            val work = OneTimeWorkRequestBuilder<NotificationWorker>()
+                .setConstraints(constraints)
+                .setInputData(data)
+                .setInitialDelay(delay, TimeUnit.SECONDS)
+                .build()
+            workManager.enqueueUniqueWork(date, ExistingWorkPolicy.KEEP, work)
+        } else {
+            workManager.cancelUniqueWork(date)
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.mathgeniusguide.project8.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,6 +12,8 @@ import com.mathgeniusguide.go4lunch.database.RestaurantItem
 import com.mathgeniusguide.project8.api.Api
 import com.mathgeniusguide.project8.connectivity.ConnectivityInterceptor
 import com.mathgeniusguide.project8.connectivity.NoConnectivityException
+import com.mathgeniusguide.project8.database.CoworkerDao
+import com.mathgeniusguide.project8.database.CoworkerItem
 import com.mathgeniusguide.project8.util.toRestaurantItem
 import com.mathgeniusguide.project8.responses.details.DetailsResponse
 import com.mathgeniusguide.project8.util.Constants
@@ -21,8 +22,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 class PlacesViewModel(application: Application) : AndroidViewModel(application) {
     // declare MutableLiveData variables for use in this class
@@ -36,8 +35,10 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
 
     // Room Database
     private val _savedRestaurants = MutableLiveData<List<RestaurantItem>>()
+    private val _savedCoworkers = MutableLiveData<List<CoworkerItem>>()
     private var db: RestaurantDatabase? = null
-    private var dao: RestaurantDao? = null
+    private var restaurantDao: RestaurantDao? = null
+    private var coworkerDao: CoworkerDao? = null
 
     // declare LiveData variables for observing in other classes
     val detailsCount: LiveData<Int>
@@ -54,6 +55,8 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _isDataLoadingError
     val savedRestaurants: LiveData<List<RestaurantItem>>
         get() = _savedRestaurants
+    val savedCoworkers: LiveData<List<CoworkerItem>>
+        get() = _savedCoworkers
 
     // fetch nearby places
     fun fetchPlaces(latitude: Double, longitude: Double, radius: Int, recentIds: List<String>, expiredIds: List<String>, context: Context) {
@@ -150,9 +153,9 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         // run function from DAO
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
-            dao = db?.restaurantDao()
+            restaurantDao = db?.restaurantDao()
             Observable.fromCallable({
-                dao?.insertRestaurantItemIfNotExists(restaurantItem)
+                restaurantDao?.insertRestaurantItemIfNotExists(restaurantItem)
             }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
@@ -163,9 +166,9 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         // run function from DAO
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
-            dao = db?.restaurantDao()
+            restaurantDao = db?.restaurantDao()
             Observable.fromCallable({
-                dao?.insertRestaurantItem(restaurantItem)
+                restaurantDao?.insertRestaurantItem(restaurantItem)
             }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
@@ -176,10 +179,34 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         // fetch all data from database
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
-            dao = db?.restaurantDao()
-            dao?.selectAll()?.observeForever({
+            restaurantDao = db?.restaurantDao()
+            restaurantDao?.selectAll()?.observeForever({
                 _savedRestaurants.postValue(it)
             })
+        }
+    }
+
+    fun fetchSavedCoworkers(context: Context) {
+        // fetch all data from database
+        viewModelScope.launch {
+            db = RestaurantDatabase.getDataBase(context)
+            coworkerDao = db?.coworkerDao()
+            coworkerDao?.loadCoworkers()?.observeForever({
+                _savedCoworkers.postValue(it)
+            })
+        }
+    }
+
+    fun insertCoworkerItem(coworkerItem: CoworkerItem, context: Context) {
+        // run function from DAO
+        viewModelScope.launch {
+            db = RestaurantDatabase.getDataBase(context)
+            coworkerDao = db?.coworkerDao()
+            Observable.fromCallable({
+                coworkerDao?.insertCoworkerItem(coworkerItem)
+            }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
         }
     }
 }

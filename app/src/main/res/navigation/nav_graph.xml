@@ -24,26 +24,31 @@
             app:destination="@id/chat"
             app:enterAnim="@anim/push_left_in"
             app:exitAnim="@anim/push_left_out" />
+    <action
+            android:id="@+id/action_instructions"
+            app:destination="@id/instructions"
+            app:enterAnim="@anim/push_left_in"
+            app:exitAnim="@anim/push_left_out" />
     <fragment
             android:id="@+id/map_view"
             android:name="com.mathgeniusguide.project8.ui.MapFragment"
             android:label="@string/map_view"
-            tools:layout="@layout/map_view" />
+            tools:layout="@layout/map_fragment" />
     <fragment
             android:id="@+id/list_view"
             android:name="com.mathgeniusguide.project8.ui.ListFragment"
             android:label="@string/list_view"
-            tools:layout="@layout/list_view" />
+            tools:layout="@layout/list_fragment" />
     <fragment
             android:id="@+id/workmates"
             android:name="com.mathgeniusguide.project8.ui.WorkmatesFragment"
             android:label="@string/workmates"
-            tools:layout="@layout/workmates" />
+            tools:layout="@layout/workmates_fragment" />
     <fragment
             android:id="@+id/login"
             android:name="com.mathgeniusguide.project8.ui.LoginFragment"
             android:label="@string/login"
-            tools:layout="@layout/login">
+            tools:layout="@layout/login_fragment">
         <action
                 android:id="@+id/action_login"
                 app:destination="@id/map_view"
@@ -54,7 +59,7 @@
             android:id="@+id/restaurant_view"
             android:name="com.mathgeniusguide.project8.ui.RestaurantFragment"
             android:label="@string/restaurant_page"
-            tools:layout="@layout/restaurant_view">
+            tools:layout="@layout/restaurant_fragment">
         <action
                 android:id="@+id/action_website"
                 app:destination="@id/web_view"
@@ -65,15 +70,20 @@
             android:id="@+id/web_view"
             android:name="com.mathgeniusguide.project8.ui.WebFragment"
             android:label="@string/restaurant_website"
-            tools:layout="@layout/web_view" />
+            tools:layout="@layout/web_fragment" />
     <fragment
             android:id="@+id/settings"
             android:name="com.mathgeniusguide.project8.ui.SettingsFragment"
             android:label="@string/settings"
-            tools:layout="@layout/settings" />
+            tools:layout="@layout/settings_fragment" />
     <fragment
             android:id="@+id/chat"
             android:name="com.mathgeniusguide.project8.ui.ChatFragment"
             android:label="@string/chat"
-            tools:layout="@layout/chat_view" />
+            tools:layout="@layout/chat_fragment" />
+    <fragment
+            android:id="@+id/instructions"
+            android:name="com.mathgeniusguide.project8.ui.InstructionsFragment"
+            android:label="@string/instructions"
+            tools:layout="@layout/instructions_fragment" />
 </navigation>

@@ -34,7 +34,7 @@ class ListFragment: Fragment() {
         if (act.placeList.value != null) {
             val placeList = act.placeList.value!!
             for (i in placeList) {
-                i.workmates = act.chosenRestaurantList.filter { it.restaurant == i.id }.size
+                i.workmates = act.firebaseCoworkerList.filter { it.restaurant == i.id }.size
             }
             listViewRV.layoutManager = LinearLayoutManager(context)
             val pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)

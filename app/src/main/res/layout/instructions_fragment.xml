@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+        <TextView style="@style/sectionName"
+                android:text="@string/login_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/login_screen_1"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/map_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/map_screen_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/map_screen_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/map_screen_3"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/map_screen_4"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/list_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/list_screen_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/list_screen_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/list_screen_3"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/list_screen_4"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/workmates_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/workmates_screen_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/workmates_screen_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/workmates_screen_3"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/restaurant_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_3"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_4"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_5"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_6"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/restaurant_screen_7"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/chat_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/chat_screen_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/chat_screen_2"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/search"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/search_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/search_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/search_3"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/search_4"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/menu"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/menu_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/menu_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/menu_3"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/menu_4"/>
+
+        <TextView style="@style/sectionName"
+                android:text="@string/settings_screen"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/settings_screen_1"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/settings_screen_2"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/settings_screen_3"/>
+        <TextView style="@style/sectionText"
+                android:text="@string/settings_screen_4"/>
+    </LinearLayout>
+
+</ScrollView>

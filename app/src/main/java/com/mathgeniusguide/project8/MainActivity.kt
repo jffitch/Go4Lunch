@@ -10,7 +10,6 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -30,8 +29,8 @@ import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import com.bumptech.glide.Glide
-import com.facebook.AccessToken
 import com.facebook.CallbackManager
+import com.facebook.login.LoginManager
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -48,15 +47,15 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import com.mathgeniusguide.go4lunch.database.RestaurantDao
 import com.mathgeniusguide.go4lunch.database.RestaurantDatabase
-import com.mathgeniusguide.project8.util.observeOnce
-import com.mathgeniusguide.project8.util.toRestaurantItem
 import com.mathgeniusguide.project8.database.ChatItem
-import com.mathgeniusguide.project8.database.ChosenRestaurantItem
-import com.mathgeniusguide.project8.util.Constants
-import com.mathgeniusguide.project8.util.Functions.createRestaurant
-import com.mathgeniusguide.project8.util.Functions.nearbyPlaceDetails
+import com.mathgeniusguide.project8.database.FirebaseCoworkerItem
+import com.mathgeniusguide.project8.database.CoworkerDao
 import com.mathgeniusguide.project8.database.NearbyPlace
+import com.mathgeniusguide.project8.util.*
+import com.mathgeniusguide.project8.util.FirebaseFunctions.createRestaurant
 import com.mathgeniusguide.project8.util.Functions.coordinateDistance
+import com.mathgeniusguide.project8.util.Functions.nearbyPlaceDetails
+import com.mathgeniusguide.project8.util.Functions.setNotificationAlarm
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
@@ -74,8 +73,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var fetched = false
     var restaurantsLiked = mutableListOf<String>()
     var chattingWith = ""
-    lateinit var callbackManager: CallbackManager
-
+    var callbackManager: CallbackManager? = null
 
     // Firebase variables
     lateinit var googleApiClient: GoogleApiClient
@@ -86,7 +84,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var userkey = ""
     var photoUrl = ""
     lateinit var database: DatabaseReference
-    var chosenRestaurantList = ArrayList<ChosenRestaurantItem>()
+    var firebaseCoworkerList = ArrayList<FirebaseCoworkerItem>()
     var chatList = ArrayList<ChatItem>()
 
     // Location
@@ -97,7 +95,11 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     // Room Database
     private var db: RestaurantDatabase? = null
-    private var dao: RestaurantDao? = null
+    private var restaurantDao: RestaurantDao? = null
+    private var coworkerDao: CoworkerDao? = null
+
+    // Notifications
+    var notificationTime = "12:00:00"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,6 +111,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         setUpAutoComplete()
         setUpLocation()
         observeLiveData()
+        viewModel.fetchSavedCoworkers(this)
     }
 
     private fun setUpView() {
@@ -140,6 +143,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             when (it.itemId) {
                 R.id.logout -> logout()
                 R.id.your_lunch -> yourLunch()
+                R.id.instructions -> instructions()
                 R.id.settings -> settings()
                 else -> it.onNavDestinationSelected(navController)
             }
@@ -156,7 +160,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private fun setUpRoomDatabase() {
         // set up database and dao for Room Database
         db = RestaurantDatabase.getDataBase(this)
-        dao = db?.restaurantDao()
+        restaurantDao = db?.restaurantDao()
+        coworkerDao = db?.coworkerDao()
     }
 
     private fun setUpGoogleSignIn() {
@@ -200,6 +205,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         // load saved preference for radius
         val pref = getSharedPreferences(Constants.PREF_LOCATION, 0)
         radius = pref?.getInt("radius", 3000) ?: 3000
+        notificationTime = pref?.getString("notificationTime", "12:00:00") ?: "12:00:00"
 
         // initialize location to impossible values
         latitude.postValue(91.0)
@@ -250,6 +256,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         viewModel.savedRestaurants.observe(this, Observer { details ->
             placeList.postValue(details.map { v -> nearbyPlaceDetails(v, latitude.value!!, longitude.value!!) }.filter { coordinateDistance(latitude.value!!, longitude.value!!, it.latitude, it.longitude) < radius}.toMutableList())
         })
+        viewModel.savedCoworkers.observe(this, Observer {list ->
+            for (i in list) {
+                if (firebaseCoworkerList.none {i.id == it.id}) {
+                    firebaseCoworkerList.add(i.toFirebaseCoworkerItem())
+                }
+            }
+        })
         viewModel.isAutocompleteDataLoading.observe(this, Observer {
             autocompleteProgressScreen.visibility = if (it) View.VISIBLE else View.GONE
         })
@@ -273,29 +286,48 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         while (restaurants.hasNext()) {
             // get current item
             val currentItem = restaurants.next()
-            val chosenRestaurantItem = ChosenRestaurantItem.create()
+            val firebaseCoworkerItem = FirebaseCoworkerItem.create()
             // get current data in a map
             val map = currentItem.value as HashMap<String, Any>
             // key will return Firebase ID
+            firebaseCoworkerItem.id = currentItem.key
+            // remove previous entry for this id if it exists
+            firebaseCoworkerList = firebaseCoworkerList.filter {it.id != firebaseCoworkerItem.id} as ArrayList<FirebaseCoworkerItem>
             // get saved data for each coworker
-            chosenRestaurantItem.id = currentItem.key
-            chosenRestaurantItem.username = map.get("username") as String?
-            chosenRestaurantItem.restaurant = map.get("restaurant") as String?
-            chosenRestaurantItem.liked = map.get("liked") as String?
-            chosenRestaurantItem.photo = map.get("photo") as String?
-            chosenRestaurantList.add(chosenRestaurantItem)
+            firebaseCoworkerItem.username = map.get("username") as String?
+            firebaseCoworkerItem.restaurant = map.get("restaurant") as String?
+            firebaseCoworkerItem.restaurantName = map.get("restaurantName") as String?
+            firebaseCoworkerItem.liked = map.get("liked") as String?
+            firebaseCoworkerItem.photo = map.get("photo") as String?
+            firebaseCoworkerList.add(firebaseCoworkerItem)
+            viewModel.insertCoworkerItem(firebaseCoworkerItem.toCoworkerItem(), this)
         }
 
-        // if coworker list from firebase does not include your username, add it
-        // update userkey and restaurantsLiked
+        // if coworker list from firebase does not include your username, create new item
+        // if coworker list from firebase includes your username, update userkey and restaurantsLiked
         if (username != ANONYMOUS) {
-            if (chosenRestaurantList.none { it.username == username }) {
-                createRestaurant(username, "", "", photoUrl, database)
+            if (firebaseCoworkerList.none { it.username == username }) {
+                userkey = createRestaurant(username, "", "", "", photoUrl, database)
+                restaurantsLiked = emptyList<String>().toMutableList()
+                val firebaseCoworkerItem = FirebaseCoworkerItem()
+                firebaseCoworkerItem.id = userkey
+                firebaseCoworkerItem.liked = ""
+                firebaseCoworkerItem.username = username
+                firebaseCoworkerItem.photo = photoUrl
+                firebaseCoworkerItem.restaurant = ""
+                firebaseCoworkerItem.restaurantName = ""
+                firebaseCoworkerList.add(firebaseCoworkerItem)
+                // set up notifications for logged in user
+                setNotificationAlarm(false, notificationTime, username, this)
+            } else {
+                userkey = firebaseCoworkerList.first { it.username == username }.id!!
+                restaurantsLiked =
+                    firebaseCoworkerList.first { it.username == username }.liked!!.split(" , ")
+                        .toMutableList()
+                // set up notifications for logged in user
+                setNotificationAlarm(firebaseCoworkerList.first { it.username == username }.restaurant != "", notificationTime, username, this)
             }
-            userkey = chosenRestaurantList.first { it.username == username }.id!!
-            restaurantsLiked = chosenRestaurantList.first { it.username == username }.liked!!.split(" , ").toMutableList()
         }
-
         // get chats data
         val chats = dataSnapshot.child(Constants.CHATS).children.iterator()
         while (chats.hasNext()) {
@@ -305,13 +337,16 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             // get current data in a map
             val map = currentItem.value as HashMap<String, Any>
             // key will return Firebase ID
-            // get saved data for each chat
             chatItem.id = currentItem.key
-            chatItem.from = map.get("from") as String?
-            chatItem.to = map.get("to") as String?
-            chatItem.text = map.get("text") as String?
-            chatItem.timestamp = map.get("timestamp") as String?
-            chatList.add(chatItem)
+            // prevent same item from loading repeatedly
+            if (chatList.none {it.id == chatItem.id}) {
+                // get saved data for each chat
+                chatItem.from = map.get("from") as String?
+                chatItem.to = map.get("to") as String?
+                chatItem.text = map.get("text") as String?
+                chatItem.timestamp = map.get("timestamp") as String?
+                chatList.add(chatItem)
+            }
         }
     }
 
@@ -340,7 +375,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     private fun getNearbyPlaces(lat: Double, lng: Double) {
         // load saved IDs from database
-        dao!!.selectIds().observeOnce(this, Observer {
+        restaurantDao!!.selectIds().observeOnce(this, Observer {
             val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
             val now = sdf.format(Date())
             if (it != null) {
@@ -415,10 +450,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         // sign out of firebase
         firebaseAuth.signOut()
         Auth.GoogleSignInApi.signOut(googleApiClient)
+        LoginManager.getInstance().logOut()
+        callbackManager = null
         // set user information to defaults
+        setNotificationAlarm(false, notificationTime, username, this)
         username = ANONYMOUS
         firebaseUser = null
         photoUrl = ""
+        // delete chats from this session, they will be reloaded from firebase
+        chatList = chatList.filter {it.id != ""} as ArrayList<ChatItem>
         // navigate to login fragment
         // make toolbars invisible
         navController.navigate(R.id.action_logout)
@@ -431,7 +471,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     private fun yourLunch(): Boolean {
         // if coworker list doesn't load from firebase, or if it's empty, or if none match the user's username, show an error
-        if (chosenRestaurantList == null || chosenRestaurantList.isEmpty() || chosenRestaurantList.none { it.username == username }) {
+        if (firebaseCoworkerList == null || firebaseCoworkerList.isEmpty() || firebaseCoworkerList.none { it.username == username }) {
             Toast.makeText(
                 this,
                 resources.getString(R.string.load_chosen_failed),
@@ -441,7 +481,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             return true
         }
         // if coworker list loads correctly from firebase, save id of your chosen restaurant
-        val yourRestaurant = chosenRestaurantList.first { it.username == username }.restaurant
+        val yourRestaurant = firebaseCoworkerList.first { it.username == username }.restaurant
+        // if no restaurant has been chosen yet, show an error
+        if (yourRestaurant == "") {
+            Toast.makeText(this, resources.getString(R.string.no_lunch_chosen), Toast.LENGTH_LONG)
+                .show()
+            return true
+        }
         // if nearby place list doesn't load from API, or if it's empty, or if none match the chosen restaurant, show an error
         if (placeList.value == null || placeList.value!!.isEmpty() || placeList.value!!.none { it.id == yourRestaurant }) {
             Toast.makeText(
@@ -449,12 +495,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 resources.getString(R.string.load_nearby_failed),
                 Toast.LENGTH_LONG
             )
-                .show()
-            return true
-        }
-        // if no restaurant has been chosen yet, show an error
-        if (yourRestaurant == "") {
-            Toast.makeText(this, resources.getString(R.string.no_lunch_chosen), Toast.LENGTH_LONG)
                 .show()
             return true
         }
@@ -468,6 +508,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private fun settings(): Boolean {
         // go to settings fragment
         navController.navigate(R.id.action_settings)
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    private fun instructions(): Boolean {
+        // go to settings fragment
+        navController.navigate(R.id.action_instructions)
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
@@ -490,8 +537,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 // Google Sign-In failed
                 Log.e(TAG, "Google Sign-In failed.")
             }
-        } else {
-            callbackManager.onActivityResult(requestCode, resultCode, data)
+        } else if (callbackManager != null){
+            callbackManager!!.onActivityResult(requestCode, resultCode, data)
         }
     }
 
@@ -516,6 +563,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 }
             })
     }
+
     override fun onProviderDisabled(provider: String?) {
     }
 

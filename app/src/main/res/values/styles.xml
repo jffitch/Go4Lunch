@@ -37,5 +37,29 @@
         <item name="android:textSize">15sp</item>
         <item name="android:inputType">number</item>
     </style>
-
+    <style name="settings_edittext">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_marginStart">25dp</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+    <style name="sectionName">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">start</item>
+        <item name="android:layout_marginLeft">10dp</item>
+        <item name="android:layout_marginRight">10dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+    <style name="sectionText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_marginLeft">30dp</item>
+        <item name="android:layout_marginRight">10dp</item>
+        <item name="android:gravity">start</item>
+    </style>
 </resources>

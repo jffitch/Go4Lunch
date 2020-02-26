@@ -4,6 +4,7 @@
 	<!--navigation items-->
     <string name="logout">Logout</string>
 	<string name="settings">Settings</string>
+	<string name="instructions">Instructions</string>
 	<string name="your_lunch">Your Lunch</string>
 	<string name="list_view">List View</string>
 	<string name="login">login</string>
@@ -66,8 +67,59 @@
 	<string name="highest_rating">highest rating</string>
 	<string name="most_workmates">most workmates</string>
 	<string name="alphabetical">alphabetical by name</string>
+	<string name="notification_time">Notification Time</string>
 
 	<!--facebook-->
 	<string name="facebook_app_id">2174751236152917</string>
 	<string name="fb_login_protocol_scheme">fb2174751236152917</string>
+
+	<!--notifications-->
+	<string name="notification_title">You have chosen to eat at %1$s.</string>
+	<string name="eating_alone">You will be eating alone.</string>
+	<string name="one_person_joining">%1$s is joining you.</string>
+	<string name="multiple_people_joining">%1$s and %2$s are joining you.</string>
+	<string name="save">SAVE</string>
+
+	<!--instructions-->
+	<string name="login_screen">Login Screen</string>
+	<string name="login_screen_1">If you are not logged in, only the Login screen will be visible. You have the option of logging in with a Google or Facebook account.</string>
+	<string name="map_screen">Map Screen</string>
+	<string name="map_screen_1">Immediately after logging in, or immediately after opening the app if you are already logged in, the Map screen will be visible.</string>
+	<string name="map_screen_2">The map screen will be centered on your location. Nearby restaurants will be shown with markers at the restaurant\'s location.</string>
+	<string name="map_screen_3">Immediately after opening the app, it may take some time to load the nearby restaurants.</string>
+	<string name="map_screen_4">Clicking on a marker for a restaurant will display the restaurant\'s name. Clicking on the restaurant\'s name will display the page for that restaurant.</string>
+	<string name="list_screen">List Screen</string>
+	<string name="list_screen_1">Instead of displaying the nearby restaurants in a map, you also have the option to display them as a list.</string>
+	<string name="list_screen_2">The list will show details about the restaurant including the distance from you, the address, the opening or closing time, the rating (0 to 3 stars), and the number of workmates who are joining you.</string>
+	<string name="list_screen_3">Depending on your settings, the restaurants can be sorted by shortest distance first, by highest rating first, by most workmates joining first, or alphabetical by name. Restaurants that you like will always be shown first.</string>
+	<string name="list_screen_4">Clicking a restaurant will display the page for that restaurant.</string>
+	<string name="workmates_screen">Workmates Screen</string>
+	<string name="workmates_screen_1">The Workmates screen shows a list of all of your workmates.</string>
+	<string name="workmates_screen_2">Each workmate will show their photo, their name, and the restaurant that they chose to eat at.</string>
+	<string name="workmates_screen_3">Clicking a workmate will display a page for you to chat with that workmate.</string>
+	<string name="restaurant_screen">Restaurant Screen</string>
+	<string name="restaurant_screen_1">The Restaurant screen is displayed whenever you click a restaurant in the Map screen or List screen.</string>
+	<string name="restaurant_screen_2">The restaurant\'s name, rating, address, and photo will be displayed.</string>
+	<string name="restaurant_screen_3">Clicking the checkbox will select this restaurant as where you will be eating for lunch.</string>
+	<string name="restaurant_screen_4">Clicking "Call" will open a dialer with the restaurant\'s phone number entered.</string>
+	<string name="restaurant_screen_5">Clicking "Like" will cause this restaurant to be displayed before other restaurants in the List screen.</string>
+	<string name="restaurant_screen_6">Clicking "Website" will display the webpage for this restaurant.</string>
+	<string name="restaurant_screen_7">If workmates are joining you, they will be displayed. Clicking a workmate will display a page for you to chat with that workmate.</string>
+	<string name="chat_screen">Chat Screen</string>
+	<string name="chat_screen_1">Clicking a workmate in the Workmates screen or the Restaurant screen will display a Chat screen, where you can chat with that workmate.</string>
+	<string name="chat_screen_2">Messages between you and your workmate will be displayed, along with the sender\'s photo and the time that the message was sent.</string>
+	<string name="search_1">Clicking the search icon will display a search field.</string>
+	<string name="search_2">When you begin typing, suggestions of nearby restaurants will be shown.</string>
+	<string name="search_3">Clicking a restaurant will display the page for that restaurant.</string>
+	<string name="search_4">If the restaurant is not already in the Map screen and List screen, it will be added.</string>
+	<string name="menu">Menu</string>
+	<string name="menu_1">Clicking the drawer icon or swiping from left to right will display a menu.</string>
+	<string name="menu_2">Clicking "Your Lunch" will display the page for your chosen restaurant.</string>
+	<string name="menu_3">Clicking "Settings" will display the Settings screen, where you can change your settings.</string>
+	<string name="menu_4">Clicking "Log Out" will log you out and display the Login screen</string>
+	<string name="settings_screen">Settings Screen</string>
+	<string name="settings_screen_1">The "Search Radius" field allows you to change the maximum distance for nearby restaurants. This setting will take effect the next time you open the app.</string>
+	<string name="settings_screen_2">The "List View Sort Order" field allows you to change the order that the restaurants are displayed in the List screen.</string>
+	<string name="settings_screen_3">The "Notification Time" field allows you to change the time of day that you\'ll receive a notification telling you where you chose to eat and who is joining you.</string>
+	<string name="settings_screen_4">The "Save" button saves your settings.</string>
 </resources>

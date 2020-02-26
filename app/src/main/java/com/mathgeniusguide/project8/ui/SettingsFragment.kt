@@ -13,6 +13,8 @@ import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.WorkmatesAdapter
 import com.mathgeniusguide.project8.util.Constants
+import com.mathgeniusguide.project8.util.Functions.setNotificationAlarm
+import com.mathgeniusguide.project8.util.fixTime
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.settings_fragment.*
 
@@ -20,6 +22,7 @@ class SettingsFragment: Fragment() {
     var pref: SharedPreferences? = null
     var radius = 3000
     var orderBy = Constants.BY_DISTANCE
+    var notificationTime = "12:00:00"
     lateinit var act: MainActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -35,37 +38,36 @@ class SettingsFragment: Fragment() {
         pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
         radius = pref?.getInt("radius", 3000) ?: 3000
         orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
+        notificationTime = pref?.getString("notificationTime", "12:00:00") ?: "12:00:00"
         searchRadiusET.setText(radius.toString())
-        searchRadiusET.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int,
-                                           count: Int, after: Int) {
+        notificationTimeET.setText(notificationTime)
+
+        saveButton.setOnClickListener {
+            if (searchRadiusET.text.isNotEmpty()) {
+                radius = searchRadiusET.text.toString().toInt()
+                val editor = pref?.edit()
+
+                editor?.apply()
             }
-            override fun onTextChanged(s: CharSequence, start: Int,
-                                       before: Int, count: Int) {
-                if (s.isNotEmpty()) {
-                    radius = s.toString().toInt()
-                    val editor = pref?.edit()
-                    editor?.putInt("radius", radius)
-                    editor?.apply()
-                }
-            }
-        })
-        listViewOrderRG.check(when (orderBy) {
-            Constants.BY_RATING -> R.id.byRating
-            Constants.BY_WORKMATES -> R.id.byWorkmates
-            Constants.BY_NAME -> R.id.byName
-            else -> R.id.byDistance
-        })
-        listViewOrderRG.setOnCheckedChangeListener { radioGroup, i ->
-            orderBy = when(i) {
+            orderBy = when(listViewOrderRG.checkedRadioButtonId) {
                 R.id.byRating -> Constants.BY_RATING
                 R.id.byWorkmates -> Constants.BY_WORKMATES
                 R.id.byName -> Constants.BY_NAME
                 else -> Constants.BY_DISTANCE
             }
+            if (notificationTimeET.text.isNotEmpty()) {
+                setNotificationAlarm(false, notificationTime, act.username, context!!)
+                notificationTime = notificationTimeET.text.toString().fixTime()
+                setNotificationAlarm(true, notificationTime, act.username, context!!)
+                act.notificationTime = notificationTime
+                val editor = pref?.edit()
+
+                editor?.apply()
+            }
             val editor = pref?.edit()
             editor?.putInt("orderBy", orderBy)
+            editor?.putInt("radius", radius)
+            editor?.putString("notificationTime", notificationTime)
             editor?.apply()
         }
     }

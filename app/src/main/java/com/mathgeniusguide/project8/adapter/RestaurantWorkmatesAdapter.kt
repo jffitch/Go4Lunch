@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.database.ChosenRestaurantItem
+import com.mathgeniusguide.project8.database.FirebaseCoworkerItem
 import kotlinx.android.synthetic.main.workmates_item.view.*
 
-class RestaurantWorkmatesAdapter (private val items: List<ChosenRestaurantItem>, val context: Context, val navController: NavController) : RecyclerView.Adapter<RestaurantWorkmatesAdapter.ViewHolder> () {
+class RestaurantWorkmatesAdapter (private val items: List<FirebaseCoworkerItem>, val context: Context, val navController: NavController) : RecyclerView.Adapter<RestaurantWorkmatesAdapter.ViewHolder> () {
     override fun getItemCount(): Int {
         return items.size
     }

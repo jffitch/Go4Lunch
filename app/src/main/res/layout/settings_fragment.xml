@@ -42,5 +42,16 @@
                     android:layout_height="wrap_content"
                     android:text="@string/alphabetical" />
         </RadioGroup>
+        <TextView
+                style="@style/settings_label"
+                android:text="@string/notification_time"/>
+        <EditText
+                style="@style/settings_edittext"
+                android:id="@+id/notificationTimeET" />
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/save"
+                android:id="@+id/saveButton"/>
     </LinearLayout>
     </ScrollView>

@@ -27,9 +27,9 @@ class WorkmatesFragment: Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (act.chosenRestaurantList != null) {
+        if (act.firebaseCoworkerList != null) {
             workmatesRV.layoutManager = LinearLayoutManager(context)
-            workmatesRV.adapter = WorkmatesAdapter(act.chosenRestaurantList.sortedByDescending{it.restaurant}, context!!, act.placeList.value, findNavController())
+            workmatesRV.adapter = WorkmatesAdapter(act.firebaseCoworkerList.sortedByDescending{it.restaurant}, context!!, findNavController())
         }
     }
 
