@@ -33,6 +33,7 @@ class ChatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         act = activity as MainActivity
         act.toolbar.visibility = View.VISIBLE
+        act.toolbar.setNavigationIcon(R.drawable.drawer)
         act.autocompleteFragment.view?.visibility = View.GONE
 
         chatRV.layoutManager = LinearLayoutManager(context)

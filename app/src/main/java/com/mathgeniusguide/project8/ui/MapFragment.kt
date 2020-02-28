@@ -37,6 +37,7 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
         act = activity as MainActivity
         act.toolbar.visibility = View.VISIBLE
+        act.toolbar.setNavigationIcon(R.drawable.drawer)
         act.autocompleteFragment.view?.visibility = View.GONE
         if (map != null) {
             map.onCreate(null)

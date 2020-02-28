@@ -33,6 +33,7 @@ class WebFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         act.toolbar.visibility = View.VISIBLE
+        act.toolbar.setNavigationIcon(R.drawable.drawer)
         act.autocompleteFragment.view?.visibility = View.GONE
     }
 }

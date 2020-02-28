@@ -45,6 +45,7 @@ class RestaurantFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         act = activity as MainActivity
         act.toolbar.visibility = View.VISIBLE
+        act.toolbar.setNavigationIcon(R.drawable.drawer)
         act.autocompleteFragment.view?.visibility = View.GONE
         val chosenPlace = act.chosenPlace!!
         val list = act.firebaseCoworkerList.filter{it.restaurant == chosenPlace.id}

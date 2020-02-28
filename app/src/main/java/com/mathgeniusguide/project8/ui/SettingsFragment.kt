@@ -34,6 +34,7 @@ class SettingsFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         act = activity as MainActivity
         act.toolbar.visibility = View.VISIBLE
+        act.toolbar.setNavigationIcon(R.drawable.drawer)
         act.autocompleteFragment.view?.visibility = View.GONE
         pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
         radius = pref?.getInt("radius", 3000) ?: 3000
