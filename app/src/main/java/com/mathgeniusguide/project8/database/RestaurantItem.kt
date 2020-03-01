@@ -1,19 +1,16 @@
-package com.mathgeniusguide.go4lunch.database
+package com.mathgeniusguide.project8.database
 
-import androidx.room.*
-
-@Entity
-data class RestaurantItem(
-    @PrimaryKey
-    val id: String,
-    val address: String?,
-    val time: String?,
-    val latitude: Double?,
-    val longitude: Double?,
-    val rating: Double?,
-    val image: String?,
-    val phone: String?,
-    val website: String?,
-    val name: String?,
-    val expiration: String
-)
+class RestaurantItem () {
+    var id = ""
+    var address = ""
+    var time = ""
+    var latitude = 0.0
+    var longitude = 0.0
+    var distance = 0
+    var workmates = 0
+    var rating = 0.0
+    var image = ""
+    var phone: String? = ""
+    var website: String? = ""
+    var name = ""
+}

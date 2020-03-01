@@ -16,12 +16,12 @@ import java.util.HashMap
 
 class NotificationJobService: JobService() {
     private lateinit var notificationManagerCompat: NotificationManagerCompat
-    lateinit var database: DatabaseReference
-    var firebaseCoworkerList = ArrayList<FirebaseCoworkerItem>()
-    val ANONYMOUS = "anonymous"
-    var username = ANONYMOUS
-    var title = ""
-    var message = ""
+    private lateinit var database: DatabaseReference
+    private var firebaseCoworkerList = ArrayList<FirebaseCoworkerItem>()
+    private val ANONYMOUS = "anonymous"
+    private var username = ANONYMOUS
+    private var title = ""
+    private var message = ""
 
     override fun onStartJob(params: JobParameters): Boolean {
         username = params.extras.getString("username") ?: ANONYMOUS
@@ -35,7 +35,7 @@ class NotificationJobService: JobService() {
         return true
     }
 
-    var itemListener: ValueEventListener = object : ValueEventListener {
+    private var itemListener: ValueEventListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {
             // Get Post object and use the values to update the UI
             addDataToList(dataSnapshot)

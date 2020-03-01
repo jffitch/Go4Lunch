@@ -24,23 +24,31 @@ class ListFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // declare activity shorthand variable
         act = activity as MainActivity
+        // toolbar visible and back arrow as drawer icon
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
         act.autocompleteFragment.view?.visibility = View.GONE
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (act.placeList.value != null) {
+            // get already-loaded list of nearby restaurants
             val placeList = act.placeList.value!!
+            // calculate number of workmates for each restaurant
             for (i in placeList) {
                 i.workmates = act.firebaseCoworkerList.filter { it.restaurant == i.id }.size
             }
             listViewRV.layoutManager = LinearLayoutManager(context)
+
+            // load sort order from SharedPreferences
             val pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
             val orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
 
+            // sort restaurants by order chosen in settings, with liked restaurants first
             val sortedList = when (orderBy) {
                 Constants.BY_RATING -> placeList.sortedByDescending { it.rating }
                 Constants.BY_WORKMATES -> placeList.sortedByDescending { it.workmates }
@@ -48,6 +56,7 @@ class ListFragment: Fragment() {
                 else -> placeList.sortedBy { it.distance }
             }.sortedBy { !act.restaurantsLiked.contains(it.id) }
 
+            // set up RecyclerView
             listViewRV.adapter = PlaceAdapter(sortedList, context!!, findNavController())
         }
     }

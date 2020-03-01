@@ -3,7 +3,7 @@ package com.mathgeniusguide.project8.database
 import androidx.room.*
 
 @Entity
-data class CoworkerItem(
+data class CoworkerRoomdbItem(
     @PrimaryKey
     val id: String,
     val username: String?,

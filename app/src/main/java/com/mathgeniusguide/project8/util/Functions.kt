@@ -3,18 +3,21 @@ package com.mathgeniusguide.project8.util
 import android.content.Context
 import android.content.res.Resources
 import androidx.work.*
-import com.mathgeniusguide.go4lunch.database.RestaurantItem
+import com.mathgeniusguide.go4lunch.database.RestaurantRoomdbItem
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.database.NearbyPlace
+import com.mathgeniusguide.project8.database.RestaurantItem
 import com.mathgeniusguide.project8.responses.details.DetailsOpeningHours
 import com.mathgeniusguide.project8.responses.details.DetailsResult
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 object Functions {
-    fun chatTime(timeStamp: String?, resources: Resources): String {
-        // translate chat timestamp into readable text
+    // translate chat timestamp into readable text
+    fun chatTime(timeStamp: String?, resources: Resources, todayDate: Date): String {
         // if timestamp doesn't exist, leave blank
         if (timeStamp ==  null) {
             return ""
@@ -25,7 +28,7 @@ object Functions {
         val yearDateSdf = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
         val dateYearSdf = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
         val timeSdf = SimpleDateFormat("H:mm", Locale.getDefault())
-        val today = yearDateSdf.parse(yearDateSdf.format(Date()))
+        val today = yearDateSdf.parse(yearDateSdf.format(todayDate))
         val timeStampDate = yearDateSdf.parse(timeStamp)
         val timeStampDateTime = sdf.parse(timeStamp)
         val time = timeSdf.format(timeStampDateTime)
@@ -37,13 +40,13 @@ object Functions {
         // if not today, display date and time
         return String.format(resources.getString(R.string.date_at_time), date, time)
     }
-    fun openTime(times: DetailsOpeningHours?, resources: Resources): String {
-        // translate opening hours from API into one phrase for next opening or closing time
+
+    // translate opening hours from API into one phrase for next opening or closing time
+    private fun openTime(times: DetailsOpeningHours?, resources: Resources, today: Calendar): String {
         // if null, open 24/7
         if (times == null) {
             return resources.getString(R.string.open_24_7)
         }
-        val today = Calendar.getInstance()
         val todayDay = today.get(Calendar.DAY_OF_WEEK) - 1
         val todayHour = today.get(Calendar.HOUR_OF_DAY)
         val todayMinute = today.get(Calendar.MINUTE)
@@ -110,19 +113,22 @@ object Functions {
         }
     }
 
+    // calculate time difference between two times in dhhmm format
     fun timeDiff(start: Int, end: Int): Int {
-        // inputs are 5 digit numbers in form dhhmm
         // convert to minutes, then subtract
-        // add 10080 if negative
+        // add 10080 (minutes in week) if negative
         val startMinutes = start - 40 * (start / 100) - 4560 * (start / 10000)
         val endMinutes = end - 40 * (end / 100) - 4560 * (end / 10000)
         return (if (endMinutes < startMinutes) 10080 else 0) + endMinutes - startMinutes
     }
 
+    // calculate time difference between two times in hh:mm:ss format
     fun timeDelay(start: String, end: String): Long {
         val startArray = start.split(":")
         val endArray = end.split(":")
 
+        // calculate hour, minute, and second differences
+        // add 86400 (seconds in day) if start later than end
         val dayDelay = if (start > end) 86400 else 0
         val hourDelay = (endArray[0].toInt() - startArray[0].toInt()) * 3600
         val minuteDelay = (endArray[1].toInt() - startArray[1].toInt()) * 60
@@ -131,63 +137,65 @@ object Functions {
         return (dayDelay + hourDelay + minuteDelay + secondDelay).toLong()
     }
 
-    fun nearbyPlaceDetails(result: DetailsResult, latitude: Double, longitude: Double, resources: Resources): NearbyPlace {
-        // for loading places from API
-        val nearbyPlace = NearbyPlace()
-        nearbyPlace.id = result.place_id
-        nearbyPlace.address = result.formatted_address
-        nearbyPlace.phone = result.formatted_phone_number
-        nearbyPlace.latitude = result.geometry.location.lat
-        nearbyPlace.longitude = result.geometry.location.lng
+    // for loading restaurants from API
+    fun restaurantItemDetails(result: DetailsResult, latitude: Double, longitude: Double, resources: Resources): RestaurantItem {
+        val restaurantItem = RestaurantItem()
+        restaurantItem.id = result.place_id
+        restaurantItem.address = result.formatted_address
+        restaurantItem.phone = result.formatted_phone_number
+        restaurantItem.latitude = result.geometry.location.lat
+        restaurantItem.longitude = result.geometry.location.lng
         // use distance formula to calculate distance from current and destination locations
-        nearbyPlace.distance = coordinateDistance(
+        restaurantItem.distance = coordinateDistance(
             latitude,
             longitude,
-            nearbyPlace.latitude,
-            nearbyPlace.longitude
+            restaurantItem.latitude,
+            restaurantItem.longitude
         )
-        nearbyPlace.website = result.website
-        nearbyPlace.name = result.name
-        nearbyPlace.rating = result.rating
+        restaurantItem.website = result.website
+        restaurantItem.name = result.name
+        restaurantItem.rating = result.rating
         // translate opening hours from API into one phrase for next opening or closing time
-        nearbyPlace.time = openTime(result.opening_hours, resources)
+        restaurantItem.time = openTime(result.opening_hours, resources, Calendar.getInstance())
         // if a photo exists, load first photo
         if (result.photos != null && result.photos.isNotEmpty()) {
-            nearbyPlace.image = result.photos[0].photo_reference
+            restaurantItem.image = result.photos[0].photo_reference
         }
-        return nearbyPlace
+        return restaurantItem
     }
 
-    fun nearbyPlaceDetails(result: RestaurantItem, latitude: Double, longitude: Double): NearbyPlace {
-        // for loading places from database
-        val nearbyPlace = NearbyPlace()
-        nearbyPlace.id = result.id
-        nearbyPlace.address = result.address!!
-        nearbyPlace.phone = result.phone
-        nearbyPlace.latitude = result.latitude!!
-        nearbyPlace.longitude = result.longitude!!
+    // for loading restaurants from Room Database
+    fun restaurantItemDetails(result: RestaurantRoomdbItem, latitude: Double, longitude: Double): RestaurantItem {
+        val restaurantItem = RestaurantItem()
+        restaurantItem.id = result.id
+        restaurantItem.address = result.address!!
+        restaurantItem.phone = result.phone
+        restaurantItem.latitude = result.latitude!!
+        restaurantItem.longitude = result.longitude!!
         // use distance formula to calculate distance from current and destination locations
-        nearbyPlace.distance = coordinateDistance(
+        restaurantItem.distance = coordinateDistance(
             latitude,
             longitude,
-            nearbyPlace.latitude,
-            nearbyPlace.longitude
+            restaurantItem.latitude,
+            restaurantItem.longitude
         )
-        nearbyPlace.website = result.website
-        nearbyPlace.name = result.name!!
-        nearbyPlace.rating = result.rating!!
-        nearbyPlace.time = result.time!!
-        nearbyPlace.image = result.image!!
-        return nearbyPlace
+        restaurantItem.website = result.website
+        restaurantItem.name = result.name!!
+        restaurantItem.rating = result.rating!!
+        restaurantItem.time = result.time!!
+        restaurantItem.image = result.image!!
+        return restaurantItem
     }
 
+    // use distance formula to calculate distance between two locations
     fun coordinateDistance(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Int {
-        val latDiff = Math.abs(lat1 - lat2)
-        val lngDiff = Math.abs(lng1 - lng2) * Math.cos(lat1 * Math.PI / 180.0)
+        val latDiff = abs(lat1 - lat2)
+        val lngDiff = abs(lng1 - lng2) * cos(lat1 * Math.PI / 180.0)
         // 111319.5 is approximately earth's circumference in meters divided by 360, which would be the distance for each degree
-        return (111319.5 * Math.sqrt(latDiff * latDiff + lngDiff * lngDiff)).toInt()
+        return (111319.5 * sqrt(latDiff * latDiff + lngDiff * lngDiff)).toInt()
     }
 
+    // activate or deactivate notification based on turnOn parameter, triggering at triggerTime
     fun setNotificationAlarm(turnOn: Boolean, triggerTime: String, username: String, context: Context) {
         val workManager = WorkManager.getInstance(context)
         val dateSdf = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
@@ -200,6 +208,7 @@ object Functions {
 
         val delay = timeDelay(time, triggerTime)
         if (turnOn) {
+            // create notification if turnOn
             val constraints = Constraints.Builder()
                 .build()
             val data = Data.Builder()
@@ -212,6 +221,7 @@ object Functions {
                 .build()
             workManager.enqueueUniqueWork(date, ExistingWorkPolicy.KEEP, work)
         } else {
+            // cancel notification if not turnOn
             workManager.cancelUniqueWork(date)
         }
     }

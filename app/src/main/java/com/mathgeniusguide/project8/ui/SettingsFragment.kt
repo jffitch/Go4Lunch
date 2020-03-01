@@ -32,23 +32,33 @@ class SettingsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // declare activity shorthand variable
         act = activity as MainActivity
+        // toolbar visible and back arrow as drawer icon
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
         act.autocompleteFragment.view?.visibility = View.GONE
+        // load previously saved SharedPreferences
+        // Radius 3000, Order By Distance, and Notification Time 12:00:00 are defaults
         pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)
         radius = pref?.getInt("radius", 3000) ?: 3000
         orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
         notificationTime = pref?.getString("notificationTime", "12:00:00") ?: "12:00:00"
+        // display saved SharedPreferences in views
         searchRadiusET.setText(radius.toString())
         notificationTimeET.setText(notificationTime)
+        listViewOrderRG.check(when (orderBy) {
+            Constants.BY_RATING -> R.id.byRating
+            Constants.BY_WORKMATES -> R.id.byWorkmates
+            Constants.BY_NAME -> R.id.byName
+            else -> R.id.byDistance
+        });
 
         saveButton.setOnClickListener {
+            // get entered values for each view
             if (searchRadiusET.text.isNotEmpty()) {
                 radius = searchRadiusET.text.toString().toInt()
-                val editor = pref?.edit()
-
-                editor?.apply()
             }
             orderBy = when(listViewOrderRG.checkedRadioButtonId) {
                 R.id.byRating -> Constants.BY_RATING
@@ -61,10 +71,8 @@ class SettingsFragment: Fragment() {
                 notificationTime = notificationTimeET.text.toString().fixTime()
                 setNotificationAlarm(true, notificationTime, act.username, context!!)
                 act.notificationTime = notificationTime
-                val editor = pref?.edit()
-
-                editor?.apply()
             }
+            // save entered values to SharedPreferences
             val editor = pref?.edit()
             editor?.putInt("orderBy", orderBy)
             editor?.putInt("radius", radius)

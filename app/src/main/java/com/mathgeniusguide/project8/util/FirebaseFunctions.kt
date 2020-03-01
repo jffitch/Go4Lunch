@@ -7,8 +7,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object FirebaseFunctions {
-    fun createRestaurant(username: String, restaurant: String, restaurantName: String, liked: String, photo: String, database: DatabaseReference): String {
-        // create restaurant entry for FireBase
+    fun createCoworker(username: String, restaurant: String, restaurantName: String, liked: String, photo: String, database: DatabaseReference): String {
+        // create coworker entry for FireBase
         // id created automatically
         val newItem = database.child(Constants.CHOSEN_RESTAURANTS).push()
         val firebaseCoworkerItem = FirebaseCoworkerItem.create()
@@ -19,17 +19,18 @@ object FirebaseFunctions {
         firebaseCoworkerItem.liked = liked
         firebaseCoworkerItem.photo = photo
         newItem.setValue(firebaseCoworkerItem)
+        // return id for use in other functions
         return firebaseCoworkerItem.id!!
     }
 
     fun updateRestaurant(itemKey: String, restaurant: String, database: DatabaseReference) {
-        // update chosen restaurant in FireBase
+        // update restaurant id in FireBase
         val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
         itemReference.child("restaurant").setValue(restaurant)
     }
 
     fun updateRestaurantName(itemKey: String, restaurantName: String, database: DatabaseReference) {
-        // update chosen restaurant in FireBase
+        // update restaurant name in FireBase
         val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
         itemReference.child("restaurantName").setValue(restaurantName)
     }
@@ -41,12 +42,7 @@ object FirebaseFunctions {
         itemReference.child("liked").setValue(liked.joinToString(" , "))
     }
 
-    fun deleteRestaurant(itemKey: String, database: DatabaseReference) {
-        // delete restaurant entry in FireBase
-        val itemReference = database.child(Constants.CHOSEN_RESTAURANTS).child(itemKey)
-        itemReference.removeValue()
-    }
-
+    // create chat item in firebase
     fun createChat(from: String, to: String, text: String, database: DatabaseReference) {
         // create chat entry in FireBase
         // id created automatically
@@ -61,11 +57,5 @@ object FirebaseFunctions {
         chatItem.text = text
         chatItem.timestamp = timestamp
         newItem.setValue(chatItem)
-    }
-
-    fun deleteChat(itemKey: String, database: DatabaseReference) {
-        // delete chat entry in FireBase
-        val itemReference = database.child(Constants.CHATS).child(itemKey)
-        itemReference.removeValue()
     }
 }

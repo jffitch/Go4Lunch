@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.database.NearbyPlace
+import com.mathgeniusguide.project8.database.RestaurantItem
 import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.place_item.view.*
 
-class PlaceAdapter (private val items: List<NearbyPlace>, val context: Context, val navController: NavController) : RecyclerView.Adapter<PlaceAdapter.ViewHolder> () {
+class PlaceAdapter (private val items: List<RestaurantItem>, val context: Context, val navController: NavController) : RecyclerView.Adapter<PlaceAdapter.ViewHolder> () {
     override fun getItemCount(): Int {
         return items.size
     }

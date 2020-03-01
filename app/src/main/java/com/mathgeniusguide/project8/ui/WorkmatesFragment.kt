@@ -17,7 +17,8 @@ class WorkmatesFragment: Fragment() {
     lateinit var act: MainActivity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        act = activity as MainActivity
+        // declare activity shorthand variable
+        // act = activity as MainActivity
     }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -27,6 +28,7 @@ class WorkmatesFragment: Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // set up RecyclerView using list of coworkers
         if (act.firebaseCoworkerList != null) {
             workmatesRV.layoutManager = LinearLayoutManager(context)
             workmatesRV.adapter = WorkmatesAdapter(act.firebaseCoworkerList.sortedByDescending{it.restaurant}, context!!, findNavController())
@@ -35,8 +37,10 @@ class WorkmatesFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // toolbar visible and back arrow as drawer icon
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
         act.autocompleteFragment.view?.visibility = View.GONE
     }
 }

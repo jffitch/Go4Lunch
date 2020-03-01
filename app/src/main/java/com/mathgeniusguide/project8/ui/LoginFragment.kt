@@ -45,8 +45,11 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // declare activity shorthand variable
         act = activity as MainActivity
+        // toolbar invisible
         act.toolbar.visibility = View.GONE
+        // hide autocomplete
         act.autocompleteFragment.view?.visibility = View.GONE
         // enable Google Sign In Button
         googleButton.setOnClickListener {
@@ -76,6 +79,7 @@ class LoginFragment : Fragment() {
             }
         })
 
+        // drawer locked closed if not logged in
         act.drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
     }
 

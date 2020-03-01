@@ -31,18 +31,24 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // declare activity shorthand variable
         act = activity as MainActivity
+        // toolbar visible and back arrow as drawer icon
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
         act.autocompleteFragment.view?.visibility = View.GONE
 
+        // set up chat RecyclerView, chats ordered by timestamp
         chatRV.layoutManager = LinearLayoutManager(context)
         chatList = act.chatList.filter { (it.from == act.userkey && it.to == act.chattingWith) || (it.from == act.chattingWith && it.to == act.userkey)}.sortedBy { it.timestamp }.toMutableList()
         chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.firebaseCoworkerList.first { it.id == act.chattingWith }.photo, resources)
 
         sendButton.setOnClickListener {
+            // receive chat message and clear field
             val text = chatField.text.toString()
             chatField.setText("")
+            // generate timestamp for chat
             val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
             val timestamp = sdf.format(Date())
             val chatItem = ChatItem.create()
@@ -51,9 +57,12 @@ class ChatFragment : Fragment() {
             chatItem.to = act.chattingWith
             chatItem.text = text
             chatItem.timestamp = timestamp
+            // add to saved list
             chatList.add(chatItem)
             act.chatList.add(chatItem)
+            // add to firebase
             createChat(act.userkey, act.chattingWith, text, act.database)
+            // set up chat RecyclerView, chats ordered by timestamp
             chatList.sortBy { it.timestamp }
             chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.firebaseCoworkerList.first { it.id == act.chattingWith }.photo, resources)
         }

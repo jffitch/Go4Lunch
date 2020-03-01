@@ -10,6 +10,7 @@ import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.ChatItem
 import com.mathgeniusguide.project8.util.Functions.chatTime
 import kotlinx.android.synthetic.main.chat_item.view.*
+import java.util.*
 
 class ChatAdapter (private val items: List<ChatItem>, val context: Context, val userkey: String, val yourPhoto: String?, val theirPhoto: String?, val resources: Resources) : RecyclerView.Adapter<ChatAdapter.ViewHolder> () {
     override fun getItemCount(): Int {
@@ -30,11 +31,11 @@ class ChatAdapter (private val items: List<ChatItem>, val context: Context, val 
         Glide.with(context).load(yourPhoto).into(holder.yourImage)
         holder.yourImage.visibility = if (i.from == userkey) View.VISIBLE else View.GONE
         holder.yourChatTime.visibility = if (i.from == userkey) View.VISIBLE else View.INVISIBLE
-        holder.yourChatTime.text = chatTime(i.timestamp, resources)
+        holder.yourChatTime.text = chatTime(i.timestamp, resources, Date())
         Glide.with(context).load(theirPhoto).into(holder.theirImage)
         holder.theirImage.visibility = if (i.to == userkey) View.VISIBLE else View.GONE
         holder.theirChatTime.visibility = if (i.to == userkey) View.VISIBLE else View.INVISIBLE
-        holder.theirChatTime.text = chatTime(i.timestamp, resources)
+        holder.theirChatTime.text = chatTime(i.timestamp, resources, Date())
         holder.chatText.gravity = if (i.from == userkey) Gravity.END else Gravity.START
         holder.chatText.text = i.text
     }

@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.web_fragment.*
 
 class InstructionsFragment: Fragment() {
+    lateinit var act: MainActivity
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.instructions_fragment, container, false)
@@ -20,6 +21,12 @@ class InstructionsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as MainActivity).toolbar.setNavigationIcon(R.drawable.drawer)
+        // declare activity shorthand variable
+        act = activity as MainActivity
+        // toolbar visible and back arrow as drawer icon
+        act.toolbar.visibility = View.VISIBLE
+        act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
+        act.autocompleteFragment.view?.visibility = View.GONE
     }
 }

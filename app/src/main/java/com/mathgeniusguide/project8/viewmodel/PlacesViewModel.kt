@@ -8,16 +8,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.mathgeniusguide.go4lunch.database.RestaurantDao
 import com.mathgeniusguide.go4lunch.database.RestaurantDatabase
-import com.mathgeniusguide.go4lunch.database.RestaurantItem
+import com.mathgeniusguide.go4lunch.database.RestaurantRoomdbItem
 import com.mathgeniusguide.project8.api.Api
 import com.mathgeniusguide.project8.connectivity.ConnectivityInterceptor
 import com.mathgeniusguide.project8.connectivity.NoConnectivityException
 import com.mathgeniusguide.project8.database.CoworkerDao
-import com.mathgeniusguide.project8.database.CoworkerItem
-import com.mathgeniusguide.project8.util.toRestaurantItem
+import com.mathgeniusguide.project8.database.CoworkerRoomdbItem
+import com.mathgeniusguide.project8.util.toRestaurantRoomdbItem
 import com.mathgeniusguide.project8.responses.details.DetailsResponse
 import com.mathgeniusguide.project8.util.Constants
-import com.mathgeniusguide.project8.util.Functions.nearbyPlaceDetails
+import com.mathgeniusguide.project8.util.Functions.restaurantItemDetails
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -34,8 +34,8 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     private val _isDataLoadingError = MutableLiveData<Boolean>()
 
     // Room Database
-    private val _savedRestaurants = MutableLiveData<List<RestaurantItem>>()
-    private val _savedCoworkers = MutableLiveData<List<CoworkerItem>>()
+    private val _savedRestaurants = MutableLiveData<List<RestaurantRoomdbItem>>()
+    private val _savedCoworkers = MutableLiveData<List<CoworkerRoomdbItem>>()
     private var db: RestaurantDatabase? = null
     private var restaurantDao: RestaurantDao? = null
     private var coworkerDao: CoworkerDao? = null
@@ -53,9 +53,9 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _isAutocompleteDataLoading
     val isDataLoadingError: LiveData<Boolean>
         get() = _isDataLoadingError
-    val savedRestaurants: LiveData<List<RestaurantItem>>
+    val savedRestaurants: LiveData<List<RestaurantRoomdbItem>>
         get() = _savedRestaurants
-    val savedCoworkers: LiveData<List<CoworkerItem>>
+    val savedCoworkers: LiveData<List<CoworkerRoomdbItem>>
         get() = _savedCoworkers
 
     // fetch nearby places
@@ -103,14 +103,14 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
                         Api.invoke(connectivityInterceptor).getDetails(i, Constants.FIELDS).body()
                     if (detailsLoaded != null) {
                         // for each place ID, create a Restaurant Item and add it to the database
-                        val nearbyPlace = nearbyPlaceDetails(
+                        val nearbyPlace = restaurantItemDetails(
                             detailsLoaded.result,
                             latitude,
                             longitude,
                             getApplication<Application>().resources
                         )
                         insertRestaurantItem(
-                            nearbyPlace.toRestaurantItem(getApplication<Application>().resources),
+                            nearbyPlace.toRestaurantRoomdbItem(getApplication<Application>().resources),
                             getApplication<Application>().applicationContext
                         )
                     }
@@ -149,7 +149,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun insertRestaurantItemIfNotExists(restaurantItem: RestaurantItem, context: Context) {
+    fun insertRestaurantItemIfNotExists(restaurantItem: RestaurantRoomdbItem, context: Context) {
         // run function from DAO
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
@@ -162,7 +162,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun insertRestaurantItem(restaurantItem: RestaurantItem, context: Context) {
+    fun insertRestaurantItem(restaurantItem: RestaurantRoomdbItem, context: Context) {
         // run function from DAO
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)
@@ -197,7 +197,7 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun insertCoworkerItem(coworkerItem: CoworkerItem, context: Context) {
+    fun insertCoworkerItem(coworkerItem: CoworkerRoomdbItem, context: Context) {
         // run function from DAO
         viewModelScope.launch {
             db = RestaurantDatabase.getDataBase(context)

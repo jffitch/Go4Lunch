@@ -2,22 +2,21 @@ package com.mathgeniusguide.project8.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.mathgeniusguide.project8.database.CoworkerItem
 
 @Dao
 interface CoworkerDao{
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertCoworkerItemIfNotExists(coworkerItem: CoworkerItem)
+    fun insertCoworkerItemIfNotExists(coworkerItem: CoworkerRoomdbItem)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertCoworkerItem(coworkerItem: CoworkerItem)
+    fun insertCoworkerItem(coworkerItem: CoworkerRoomdbItem)
 
     @Update
-    fun updateCoworkerItem(coworkerItem: CoworkerItem)
+    fun updateCoworkerItem(coworkerItem: CoworkerRoomdbItem)
 
     @Delete
-    fun deleteCoworkerItem(coworkerItem: CoworkerItem)
+    fun deleteCoworkerItem(coworkerItem: CoworkerRoomdbItem)
 
-    @Query("SELECT * FROM CoworkerItem")
-    fun loadCoworkers(): LiveData<List<CoworkerItem>>
+    @Query("SELECT * FROM CoworkerRoomdbItem")
+    fun loadCoworkers(): LiveData<List<CoworkerRoomdbItem>>
 }

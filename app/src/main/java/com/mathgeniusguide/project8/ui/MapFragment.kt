@@ -18,12 +18,13 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
-import com.mathgeniusguide.project8.database.NearbyPlace
+import com.mathgeniusguide.project8.database.RestaurantItem
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.map_fragment.*
 
 class MapFragment: Fragment(), OnMapReadyCallback {
     var googleMap: GoogleMap? = null
+    // set latitude and longitude to impossible values as placeholders
     var latitude = 91.0
     var longitude = 181.0
     lateinit var act: MainActivity
@@ -35,10 +36,14 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // declare activity shorthand variable
         act = activity as MainActivity
+        // toolbar visible and back arrow as drawer icon
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
         act.autocompleteFragment.view?.visibility = View.GONE
+        // set up Google map
         if (map != null) {
             map.onCreate(null)
             map.onResume()
@@ -48,10 +53,13 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        //
         act.latitude.observe(viewLifecycleOwner, Observer {
             if (googleMap != null && latitude == 91.0 && it != null) {
                 latitude = it
+                // will only run if latitude and longitude are both set
                 setLocation(latitude, longitude)
+                // create markers for each restaurant in list
                 if (act.placeList.value != null) {
                     getMarkers(act.placeList.value!!)
                 }
@@ -60,26 +68,34 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         act.longitude.observe(viewLifecycleOwner, Observer {
             if (googleMap != null && longitude == 181.0 && it != null) {
                 longitude = it
+                // will only run if latitude and longitude are both set
                 setLocation(latitude, longitude)
+                // create markers for each restaurant in list
                 if (act.placeList.value != null) {
                     getMarkers(act.placeList.value!!)
                 }
             }
         })
+        // create markers in case restaurant list loads after location is retrieved
         act.placeList.observe(viewLifecycleOwner, Observer {
             if (googleMap != null) {
                 getMarkers(it)
             }
         })
+
+        // if restaurant list is loading, display loading screen
         act.viewModel.isDataLoading.observe(viewLifecycleOwner, Observer {
             progressScreen.visibility = if(it) View.VISIBLE else View.GONE
         })
+
+        // if restaurant list is loading, display loading progress
         act.viewModel.detailsProgress.observe(viewLifecycleOwner, Observer {
             progressCounter.text = "${it}/${act.viewModel.detailsCount.value}"
         })
     }
 
-    fun getMarkers(list: List<NearbyPlace>) {
+    // create markers for Google map
+    fun getMarkers(list: List<RestaurantItem>) {
         var coord: LatLng? = null
         var title = ""
         var pos: CameraPosition? = null
@@ -91,6 +107,7 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         }
     }
 
+    // create icon for Google map markers
     private fun  bitmapDescriptorFromVector(context: Context, vectorResId:Int): BitmapDescriptor {
         val vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
         vectorDrawable!!.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
@@ -100,11 +117,14 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    // run when Google map is ready
     override fun onMapReady(p0: GoogleMap?) {
         MapsInitializer.initialize(context)
         googleMap = p0
+        // when marker is clicked, go to restaurant page for that restaurant
         googleMap!!.setOnInfoWindowClickListener {marker->
             val placeList = act.placeList.value
+            // to determine which restaurant corresponds to each marker, find restaurant with latitude and longitude that match the marker
             if (placeList != null && placeList.any{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}) {
                 act.chosenPlace = placeList.first{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}
                 findNavController().navigate(R.id.load_page_from_map)
@@ -112,6 +132,7 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         }
     }
 
+    // if location sensor has retrieved both latitude and longitude values, go to location on map
     fun setLocation(lat: Double, lng: Double) {
         if (googleMap != null && lat != 91.0 && lng != 181.0) {
             val coord = LatLng(lat, lng)

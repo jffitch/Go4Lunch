@@ -17,6 +17,7 @@ class WebFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // declare activity shorthand variable
         act = activity as MainActivity
     }
     
@@ -27,13 +28,16 @@ class WebFragment: Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // chosenPlace will be set in MainActivity whenever navigation to this fragment happens, load webpage of that restaurant to WebView
         webView.loadUrl(act.chosenPlace!!.website)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // toolbar visible and back arrow as drawer icon
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
+        // hide autocomplete until search button clicked
         act.autocompleteFragment.view?.visibility = View.GONE
     }
 }

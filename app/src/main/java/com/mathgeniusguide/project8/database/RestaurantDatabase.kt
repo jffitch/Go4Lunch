@@ -5,9 +5,9 @@ import androidx.room.*
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.mathgeniusguide.project8.database.CoworkerDao
-import com.mathgeniusguide.project8.database.CoworkerItem
+import com.mathgeniusguide.project8.database.CoworkerRoomdbItem
 
-@Database(entities = [RestaurantItem::class, CoworkerItem::class], version = 2, exportSchema = false)
+@Database(entities = [RestaurantRoomdbItem::class, CoworkerRoomdbItem::class], version = 2, exportSchema = false)
 abstract class RestaurantDatabase : RoomDatabase() {
     abstract fun restaurantDao(): RestaurantDao
     abstract fun coworkerDao(): CoworkerDao
@@ -18,7 +18,7 @@ abstract class RestaurantDatabase : RoomDatabase() {
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE `CoworkerItem` (`id` TEXT NOT NULL PRIMARY KEY, `username` TEXT, `restaurant` TEXT, `restaurantname` TEXT, `liked` TEXT, `photo` TEXT)")
+                database.execSQL("CREATE TABLE `CoworkerRoomdbItem` (`id` TEXT NOT NULL PRIMARY KEY, `username` TEXT, `restaurant` TEXT, `restaurantname` TEXT, `liked` TEXT, `photo` TEXT)")
             }
         }
 

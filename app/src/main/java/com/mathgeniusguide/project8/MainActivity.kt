@@ -50,11 +50,11 @@ import com.mathgeniusguide.go4lunch.database.RestaurantDatabase
 import com.mathgeniusguide.project8.database.ChatItem
 import com.mathgeniusguide.project8.database.FirebaseCoworkerItem
 import com.mathgeniusguide.project8.database.CoworkerDao
-import com.mathgeniusguide.project8.database.NearbyPlace
+import com.mathgeniusguide.project8.database.RestaurantItem
 import com.mathgeniusguide.project8.util.*
-import com.mathgeniusguide.project8.util.FirebaseFunctions.createRestaurant
+import com.mathgeniusguide.project8.util.FirebaseFunctions.createCoworker
 import com.mathgeniusguide.project8.util.Functions.coordinateDistance
-import com.mathgeniusguide.project8.util.Functions.nearbyPlaceDetails
+import com.mathgeniusguide.project8.util.Functions.restaurantItemDetails
 import com.mathgeniusguide.project8.util.Functions.setNotificationAlarm
 import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -67,9 +67,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     lateinit var navController: NavController
     private val TAG = "Go4Lunch"
     private val ANONYMOUS = "anonymous"
-    lateinit var locationManager: LocationManager
-    val placeList = MutableLiveData<MutableList<NearbyPlace>>()
-    var chosenPlace: NearbyPlace? = null
+    private lateinit var locationManager: LocationManager
+    val placeList = MutableLiveData<MutableList<RestaurantItem>>()
+    var chosenPlace: RestaurantItem? = null
     var fetched = false
     var restaurantsLiked = mutableListOf<String>()
     var chattingWith = ""
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     lateinit var firebaseAuth: FirebaseAuth
     var firebaseUser: FirebaseUser? = null
     var username = ANONYMOUS
-    var useremail = ANONYMOUS
+    private var useremail = ANONYMOUS
     var userkey = ""
     var photoUrl = ""
     lateinit var database: DatabaseReference
@@ -88,10 +88,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     var chatList = ArrayList<ChatItem>()
 
     // Location
-    var locationEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+    private var locationEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
     var latitude = MutableLiveData<Double>()
     var longitude = MutableLiveData<Double>()
-    var radius = 3000
+    private var radius = 3000
 
     // Room Database
     private var db: RestaurantDatabase? = null
@@ -178,8 +178,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     private fun setUpAutoComplete() {
         val autocomplete = autocompleteFragment as AutocompleteSupportFragment
-        Places.initialize(getApplicationContext(), Constants.API_KEY)
-        val placesClient = Places.createClient(this)
+        Places.initialize(applicationContext, Constants.API_KEY)
         autocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
         autocomplete.setOnPlaceSelectedListener(object: PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
@@ -247,14 +246,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private fun observeLiveData() {
         viewModel.oneDetail?.observe(this, Observer {
             if (it != null) {
-                chosenPlace = nearbyPlaceDetails(it.result, latitude.value!!, longitude.value!!, resources)
+                chosenPlace = restaurantItemDetails(it.result, latitude.value!!, longitude.value!!, resources)
                 placeList.value!!.add(chosenPlace!!)
-                viewModel.insertRestaurantItemIfNotExists(chosenPlace!!.toRestaurantItem(resources), this)
+                viewModel.insertRestaurantItemIfNotExists(chosenPlace!!.toRestaurantRoomdbItem(resources), this)
                 navController.navigate(R.id.load_page_from_map)
             }
         })
         viewModel.savedRestaurants.observe(this, Observer { details ->
-            placeList.postValue(details.map { v -> nearbyPlaceDetails(v, latitude.value!!, longitude.value!!) }.filter { coordinateDistance(latitude.value!!, longitude.value!!, it.latitude, it.longitude) < radius}.toMutableList())
+            placeList.postValue(details.map { v -> restaurantItemDetails(v, latitude.value!!, longitude.value!!) }.filter { coordinateDistance(latitude.value!!, longitude.value!!, it.latitude, it.longitude) < radius}.toMutableList())
         })
         viewModel.savedCoworkers.observe(this, Observer {list ->
             for (i in list) {
@@ -268,7 +267,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         })
     }
 
-    var itemListener: ValueEventListener = object : ValueEventListener {
+    private var itemListener: ValueEventListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {
             // Get Post object and use the values to update the UI
             addDataToList(dataSnapshot)
@@ -300,14 +299,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             firebaseCoworkerItem.liked = map.get("liked") as String?
             firebaseCoworkerItem.photo = map.get("photo") as String?
             firebaseCoworkerList.add(firebaseCoworkerItem)
-            viewModel.insertCoworkerItem(firebaseCoworkerItem.toCoworkerItem(), this)
+            viewModel.insertCoworkerItem(firebaseCoworkerItem.toCoworkerRoomdbItem(), this)
         }
 
         // if coworker list from firebase does not include your username, create new item
         // if coworker list from firebase includes your username, update userkey and restaurantsLiked
         if (username != ANONYMOUS) {
             if (firebaseCoworkerList.none { it.username == username }) {
-                userkey = createRestaurant(username, "", "", "", photoUrl, database)
+                userkey = createCoworker(username, "", "", "", photoUrl, database)
                 restaurantsLiked = emptyList<String>().toMutableList()
                 val firebaseCoworkerItem = FirebaseCoworkerItem()
                 firebaseCoworkerItem.id = userkey
@@ -350,7 +349,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         }
     }
 
-    fun locationPermission(): Boolean {
+    private fun locationPermission(): Boolean {
         // check whether permissions have been granted
         return ContextCompat.checkSelfPermission(
             this,
@@ -380,7 +379,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             val now = sdf.format(Date())
             if (it != null) {
                 // ignore IDs that are not within the radius
-                val nearby = it.filter { coordinateDistance(lat, lng, it.latitude!!, it.longitude!!) < radius}
+                val nearby = it.filter {restaurant -> coordinateDistance(lat, lng, restaurant.latitude!!, restaurant.longitude!!) < radius}
                 // separate saved IDs by expiration date, recentIds = expiration has not passed, expiredIds = expiration has passed
                 // fetch places from API using location and saved IDs
                 val recentIds = nearby.filter {v -> v.expiration > now}.map {v -> v.id}
