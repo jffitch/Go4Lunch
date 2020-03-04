@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.mathgeniusguide.project8.database.CoworkerDao
 import com.mathgeniusguide.project8.database.CoworkerRoomdbItem
 
-@Database(entities = [RestaurantRoomdbItem::class, CoworkerRoomdbItem::class], version = 2, exportSchema = false)
+@Database(entities = [RestaurantRoomdbItem::class, CoworkerRoomdbItem::class], version = 3, exportSchema = false)
 abstract class RestaurantDatabase : RoomDatabase() {
     abstract fun restaurantDao(): RestaurantDao
     abstract fun coworkerDao(): CoworkerDao
@@ -16,23 +16,15 @@ abstract class RestaurantDatabase : RoomDatabase() {
         private var INSTANCE: RestaurantDatabase? = null
         var TEST_MODE = false
 
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE `CoworkerRoomdbItem` (`id` TEXT NOT NULL PRIMARY KEY, `username` TEXT, `restaurant` TEXT, `restaurantname` TEXT, `liked` TEXT, `photo` TEXT)")
-            }
-        }
-
         fun getDataBase(context: Context): RestaurantDatabase? {
             if (INSTANCE == null) {
                 synchronized(RestaurantDatabase::class) {
                     if (TEST_MODE) {
                         INSTANCE = Room.inMemoryDatabaseBuilder(context.applicationContext, RestaurantDatabase::class.java)
                             .allowMainThreadQueries()
-                            .addMigrations(MIGRATION_1_2)
                             .build()
                     } else {
                         INSTANCE = Room.databaseBuilder(context.applicationContext, RestaurantDatabase::class.java, "myDB")
-                            .addMigrations(MIGRATION_1_2)
                             .build()
                     }
                 }

@@ -2,24 +2,26 @@
 	<string name="app_name">Go4Lunch</string>
 
 	<!--navigation items-->
-	<string name="logout">Cierra Sesión</string>
+	<string name="logout">Cierre Sesión</string>
 	<string name="settings">Configuraciones</string>
+	<string name="instructions">Instrucciones</string>
 	<string name="your_lunch">Su Almuerzo</string>
 	<string name="list_view">Vista De Lista</string>
-	<string name="login">iniciar sesión</string>
+	<string name="login">inicie sesión</string>
 	<string name="map_view">Vista De Mapa</string>
 	<string name="restaurant_page">Página De Restaurante</string>
 	<string name="restaurant_website">Sitio Web De Restaurante</string>
 	<string name="search">Búsqueda</string>
 	<string name="workmates">Compañeros</string>
-	<string name="navigation_drawer_open">Abre Cajón</string>
-	<string name="navigation_drawer_close">Cierra Cajón</string>
+	<string name="chat">Converse</string>
+	<string name="navigation_drawer_open">Abra Cajón</string>
+	<string name="navigation_drawer_close">Cierre Cajón</string>
 
 	<!--map-->
-	<string name="you_are_here">Esta Aqui</string>
+	<string name="you_are_here">Esta Aquí</string>
 	<string name="loading_nearby_places">Cargando Lugares Cercanos</string>
-	<string name="loading_info_for">Cargando Info Para %1$s</string>
-	<string name="closing_soon">Cierre Pronto</string>
+	<string name="loading_info_for">Cargando Información Para %1$s</string>
+	<string name="closing_soon">Cierra Pronto</string>
 	<string name="open_until">Abierto Hasta Las %1$s</string>
 	<string name="open_24">Abierto Para Las Próximas 24 Horas</string>
 	<string name="open_24_7">Abierto 24/7</string>
@@ -28,38 +30,96 @@
 	<string name="opens_day_at">Abre %1$s A Las %2$s</string>
 
 	<!--workmates-->
-	<string name="workmates_placeholder">Este compañero de trabajo todavia no lo ha decidido.</string>
-	<string name="hasnt_decided_yet">%1$s todavia no ha decidido.</string>
-	<string name="is_eating_at">%1$s come a %2$s.</string>
+	<string name="workmates_placeholder">Este compañero aún no ha decidido.</string>
+	<string name="hasnt_decided_yet">%1$s aún no ha decidido.</string>
+	<string name="is_eating_at">%1$s come en %2$s.</string>
 
 	<!--restaurant-page-->
-	<string name="call">LLAMA</string>
+	<string name="call">LLAME</string>
 	<string name="like">ME GUSTA</string>
 	<string name="website">SITIO WEB</string>
 	<string name="is_joining">¡%1$s se une!</string>
-	<string name="restaurant_workmates_rv_placeholder">Todavia no hay compañeros de trabajo comiendo aquí.</string>
+	<string name="restaurant_workmates_rv_placeholder">Aún no hay compañeros comiendo aquí.</string>
 
 	<!--weekdays-->
-	<string name="sunday">domingo</string>
-	<string name="monday">lunes</string>
-	<string name="tuesday">martes</string>
-	<string name="wednesday">miércoles</string>
-	<string name="thursday">jueves</string>
-	<string name="friday">viernes</string>
-	<string name="saturday">sábado</string>
+	<string name="sunday">Domingo</string>
+	<string name="monday">Lunes</string>
+	<string name="tuesday">Martes</string>
+	<string name="wednesday">Miércoles</string>
+	<string name="thursday">Jueves</string>
+	<string name="friday">Viernes</string>
+	<string name="saturday">Sábado</string>
+
+	<!--chat times-->
+	<string name="date_at_time">%1$s a las %2$s</string>
 
 	<!--error messages-->
-	<string name="no_lunch_chosen">Todavia no has elegido un lugar para comer.</string>
+	<string name="no_lunch_chosen">Aún no has elegido un lugar para comer.</string>
 	<string name="load_chosen_failed">No se pudo cargar la lista de restaurantes elegidos.</string>
 	<string name="load_nearby_failed">No se pudo cargar la lista de restaurantes cercanos.</string>
-	<string name="no_website">Este restaurante no tiene sitio web.</string>
-	<string name="no_phone">Este restaurante no tiene número de teléfono.</string>
+	<string name="no_website">Esta restaurante no tiene un sitio web.</string>
+	<string name="no_phone">Esta restaurante no tiene número de teléfono.</string>
 
 	<!--settings-->
-	<string name="search_radius">Radio De Búsqueda (metros)</string>
-	<string name="listview_order">Orden De Vista De Lista</string>
+	<string name="search_radius">Radio De Busqueda (metros)</string>
+	<string name="listview_order">Orden Vista De Lista</string>
 	<string name="shortest_distance">menos distancia</string>
-	<string name="highest_rating">mejor calificación</string>
-	<string name="most_workmates">más compañeros</string>
+	<string name="highest_rating">más calificación</string>
+	<string name="most_workmates">más compañeros se une</string>
 	<string name="alphabetical">alfabético por nombre</string>
+	<string name="notification_time">Hora De Notificación</string>
+
+	<!--facebook-->
+	<string name="facebook_app_id">2174751236152917</string>
+	<string name="fb_login_protocol_scheme">fb2174751236152917</string>
+
+	<!--notifications-->
+	<string name="notification_title">Come en %1$s.</string>
+	<string name="eating_alone">Come solo.</string>
+	<string name="one_person_joining">%1$s se une.</string>
+	<string name="multiple_people_joining">%1$s y %2$s se unen.</string>
+	<string name="save">Guarde</string>
+
+	<!--instructions-->
+	<string name="login_screen">Pantalla De Inicio De Sesión</string>
+	<string name="login_screen_1">Si no ha iniciado sesión, solo se mostrará la pantalla de inicio de sesión. Tiene la opción de iniciar sesión con una cuenta de Google o Facebook.</string>
+	<string name="map_screen">Pantalla De Mapa</string>
+	<string name="map_screen_1">Inmediatamente después de iniciar sesión, o inmediatamente después de abrir la aplicación si ya ha iniciado sesión, se mostrará la pantalla Mapa.</string>
+	<string name="map_screen_2">La pantalla del mapa se centrará en su ubicación. Los restaurantes cercanos se mostrarán con marcadores en la ubicación del restaurante.</string>
+	<string name="map_screen_3">Inmediatamente después de abrir la aplicación, puede llevar algún tiempo cargar los restaurantes cercanos.</string>
+	<string name="map_screen_4">Al hacer clic en un marcador de un restaurante, se mostrará el nombre del restaurante. Al hacer clic en el nombre del restaurante, se mostrará la página de ese restaurante.</string>
+	<string name="list_screen">Pantalla De Lista</string>
+	<string name="list_screen_1">En lugar de mostrar los restaurantes cercanos en un mapa, también tiene la opción de mostrarlos como una lista.</string>
+	<string name="list_screen_2">La lista mostrará detalles sobre el restaurante, incluida la distancia a usted, la dirección, la hora de apertura o cierre, la calificación (0 a 3 estrellas) y el número de compañeros de trabajo que se unen a usted.</string>
+	<string name="list_screen_3">Dependiendo de su configuración, los restaurantes se pueden ordenar primero por la distancia más corta, por la calificación más alta primero, por la mayoría de los compañeros de trabajo que se unen primero, o alfabéticamente por nombre. Los restaurantes que te gustan siempre se mostrarán primero.</string>
+	<string name="list_screen_4">Al hacer clic en un restaurante, se mostrará la página de ese restaurante.</string>
+	<string name="workmates_screen">Pantalla De Compañeros De Trabajo</string>
+	<string name="workmates_screen_1">La pantalla Workmates muestra una lista de todos tus compañeros de trabajo.</string>
+	<string name="workmates_screen_2">Cada compañero de trabajo mostrará su foto, su nombre y el restaurante en el que eligieron comer.</string>
+	<string name="workmates_screen_3">Al hacer clic en un compañero de trabajo, se mostrará una página para que converse con ese compañero de trabajo.</string>
+	<string name="restaurant_screen">Pantalla Del Restaurante</string>
+	<string name="restaurant_screen_1">La pantalla Restaurante se muestra cada vez que hace clic en un restaurante en la pantalla Mapa o en la pantalla Lista.</string>
+	<string name="restaurant_screen_2">Se mostrarán el nombre, la calificación, la dirección y la foto del restaurante.</string>
+	<string name="restaurant_screen_3">Al hacer clic en la casilla de verificación, se seleccionará este restaurante como el lugar donde almorzará.</string>
+	<string name="restaurant_screen_4">Al hacer clic en "Llamar" se abrirá un marcador con el número de teléfono del restaurante ingresado.</string>
+	<string name="restaurant_screen_5">Al hacer clic en "Me gusta", este restaurante se mostrará antes que otros restaurantes en la pantalla Lista.</string>
+	<string name="restaurant_screen_6">Al hacer clic en "Sitio web" se mostrará la página web de este restaurante.</string>
+	<string name="restaurant_screen_7">Si los compañeros de trabajo se unen a usted, se mostrarán. Al hacer clic en un compañero de trabajo, se mostrará una página para que converse con ese compañero de trabajo.</string>
+	<string name="chat_screen">Pantalla De Conversar</string>
+	<string name="chat_screen_1">Al hacer clic en un compañero de trabajo en la pantalla de Compañeros de trabajo o en la pantalla del Restaurante, se mostrará una pantalla de Conversar, donde puede conversar con ese compañero de trabajo.</string>
+	<string name="chat_screen_2">Se mostrarán los mensajes entre usted y su compañero de trabajo, junto con la foto del remitente y la hora en que se envió el mensaje.</string>
+	<string name="search_1">Al hacer clic en el icono de búsqueda, se mostrará un campo de búsqueda.</string>
+	<string name="search_2">Cuando comience a escribir, se mostrarán sugerencias de restaurantes cercanos.</string>
+	<string name="search_3">Al hacer clic en un restaurante, se mostrará la página de ese restaurante.</string>
+	<string name="search_4">Si el restaurante aún no está en la pantalla Mapa y en la pantalla Lista, se agregará.</string>
+	<string name="menu">Menú</string>
+	<string name="menu_1">Al hacer clic en el icono del cajón o deslizar de izquierda a derecha, aparecerá un menú.</string>
+	<string name="menu_2">Al hacer clic en "Su almuerzo", se mostrará la página del restaurante elegido.</string>
+	<string name="menu_3">Al hacer clic en "Configuración", se mostrará la pantalla Configuración, donde puede cambiar su configuración.</string>
+	<string name="menu_4">Al hacer clic en "Cerrar sesión" se cerrará la sesión y se mostrará la pantalla de inicio de sesión</string>
+	<string name="settings_screen">Pantalla De Configuración</string>
+	<string name="settings_screen_1">El campo "Radio de búsqueda" le permite cambiar la distancia máxima para restaurantes cercanos. Esta configuración tendrá efecto la próxima vez que abra la aplicación.</string>
+	<string name="settings_screen_2">El campo "Ordenar orden de vista de lista" le permite cambiar el orden en que se muestran los restaurantes en la pantalla Lista.</string>
+	<string name="settings_screen_3">El campo "Hora de notificación" le permite cambiar la hora del día en que recibirá una notificación que le indicará dónde eligió comer y quién se unirá a usted.</string>
+	<string name="settings_screen_4">El botón "Guardar" guarda su configuración.</string>
 </resources>

@@ -1,9 +1,11 @@
 package com.mathgeniusguide.project8.util
 
+import com.mathgeniusguide.project8.util.Functions.chatTime
 import com.mathgeniusguide.project8.util.Functions.timeDiff
 import com.mathgeniusguide.project8.util.Functions.timeDelay
 import org.junit.Assert.*
 import org.junit.Test
+import java.util.*
 
 class FunctionsTest {
     @Test
@@ -98,5 +100,61 @@ class FunctionsTest {
         val formattedExpected = "12:19:02"
         val formattedActual = original.fixTime()
         assertEquals(formattedExpected, formattedActual)
+    }
+
+    @Test
+    fun chatTimeTest1() {
+        val timestamp = "2020/03/01 14:38:15"
+        val formattedDateExpected = "14:38"
+        val formattedDateActual = chatTime(timestamp, TestResources(), Date("2020/03/01 23:00:00"))
+        assertEquals(formattedDateExpected, formattedDateActual)
+    }
+
+    @Test
+    fun chatTimeTest2() {
+        val timestamp = "2020/02/16 21:05:14"
+        val formattedDateExpected = "February 16 at 21:05"
+        val formattedDateActual = chatTime(timestamp, TestResources(), Date("2020/03/01 23:00:00"))
+        assertEquals(formattedDateExpected, formattedDateActual)
+    }
+
+    @Test
+    fun chatTimeTest3() {
+        val timestamp = "2019/11/23 06:40:00"
+        val formattedDateExpected = "November 23, 2019 at 6:40"
+        val formattedDateActual = chatTime(timestamp, TestResources(), Date("2020/03/01 23:00:00"))
+        assertEquals(formattedDateExpected, formattedDateActual)
+    }
+
+    @Test
+    fun toExpirationTest1() {
+        val timeString = "Open 24/7"
+        val expirationExpected = "2020/03/02 14:00"
+        val expirationActual = timeString.toExpiration(TestResources(), Date("2020/03/01 14:00:00"))
+        assertEquals(expirationExpected, expirationActual)
+    }
+
+    @Test
+    fun toExpirationTest2() {
+        val timeString = "Closing Soon"
+        val expirationExpected = "2020/03/01 14:00"
+        val expirationActual = timeString.toExpiration(TestResources(), Date("2020/03/01 14:00:00"))
+        assertEquals(expirationExpected, expirationActual)
+    }
+
+    @Test
+    fun toExpirationTest3() {
+        val timeString = "Open Until 21:15"
+        val expirationExpected = "2020/03/01 21:15"
+        val expirationActual = timeString.toExpiration(TestResources(), Date("2020/03/01 14:00:00"))
+        assertEquals(expirationExpected, expirationActual)
+    }
+
+    @Test
+    fun toExpirationTest4() {
+        val timeString = "Opens At 6:02"
+        val expirationExpected = "2020/03/02 06:02"
+        val expirationActual = timeString.toExpiration(TestResources(), Date("2020/03/01 14:00:00"))
+        assertEquals(expirationExpected, expirationActual)
     }
 }

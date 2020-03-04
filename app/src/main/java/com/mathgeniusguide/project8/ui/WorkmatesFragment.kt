@@ -18,7 +18,7 @@ class WorkmatesFragment: Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // declare activity shorthand variable
-        // act = activity as MainActivity
+        act = activity as MainActivity
     }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

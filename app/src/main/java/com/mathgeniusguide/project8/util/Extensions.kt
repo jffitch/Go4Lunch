@@ -22,8 +22,7 @@ fun Context.isOnline(): Boolean {
 }
 
 // set expiration time for Room Database entry based on displayed opening time information
-fun String.toExpiration(resources: Resources): String {
-    val today = Date()
+fun String.toExpiration(resources: Resources, today: Date): String {
     val tomorrow = Date(today.time + 86400000)
     val fullDateSdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
     // if open for next 24 hours, entry expires in 24 hours
@@ -82,7 +81,7 @@ fun RestaurantItem.toRestaurantRoomdbItem(resources: Resources): RestaurantRoomd
         phone = this.phone,
         website = this.website,
         name = this.name,
-        expiration = this.time.toExpiration(resources)
+        expiration = this.time.toExpiration(resources, Date())
     )
     return restaurantItem
 }
