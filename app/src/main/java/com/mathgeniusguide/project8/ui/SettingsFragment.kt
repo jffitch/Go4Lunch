@@ -38,7 +38,8 @@ class SettingsFragment: Fragment() {
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
         // hide autocomplete until search button clicked
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
         // load previously saved SharedPreferences
         // Radius 3000, Order By Distance, and Notification Time 12:00:00 are defaults
         pref = context?.getSharedPreferences(Constants.PREF_LOCATION, 0)

@@ -16,81 +16,104 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:layout_constraintTop_toTopOf="parent"
                 android:background="@color/colorPrimary"
                 android:elevation="4dp"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                android:visibility="gone" />
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-        <fragment android:id="@+id/autocompleteFragment"
+        <LinearLayout
+                android:id="@+id/autocomplete"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/toolbar"
-                android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
-                />
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+            <EditText
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/autocompleteET"/>
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/autocompleteIV"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:src="@drawable/search" />
+        </LinearLayout>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#c0c0c0"
+                android:visibility="gone"
+                app:itemTextColor="#000000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:menu="@menu/tabs_menu" />
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/autocompleteRV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/autocomplete" />
 
         <fragment
+                android:id="@+id/nav_host_fragment"
                 android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintVertical_weight="1"
-                app:navGraph="@navigation/nav_graph"
                 app:defaultNavHost="true"
-                android:id="@+id/nav_host_fragment"
                 app:layout_constraintBottom_toTopOf="@id/tabs"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/autocompleteFragment"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/tabs"
-                android:background="#c0c0c0"
-                app:itemTextColor="#000000"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:menu="@menu/tabs_menu"
-                android:visibility="gone" />
+                app:layout_constraintTop_toBottomOf="@id/autocomplete"
+                app:layout_constraintVertical_weight="1"
+                app:navGraph="@navigation/nav_graph" />
 
         <LinearLayout
+                android:id="@+id/autocompleteProgressScreen"
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:background="#ffffff"
                 android:gravity="center_horizontal"
                 android:orientation="vertical"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:id="@+id/autocompleteProgressScreen"
-                android:visibility="gone">
+                app:layout_constraintTop_toTopOf="parent">
 
             <TextView
+                    android:id="@+id/autocompleteProgressText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="25dp"
                     android:gravity="center_horizontal"
                     android:text="@string/loading_info_for"
                     android:textSize="30sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="25dp"
-                    android:id="@+id/autocompleteProgressText"/>
+                    android:textStyle="bold" />
 
             <ProgressBar
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="25dp"/>
+                    android:layout_marginBottom="25dp" />
 
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
+            android:id="@+id/drawer_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/drawer_view"
-            app:headerLayout="@layout/drawer_header"
-            app:menu="@menu/drawer_menu"
             android:layout_gravity="start"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:headerLayout="@layout/drawer_header"
+            app:menu="@menu/drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

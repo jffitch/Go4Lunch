@@ -9,6 +9,8 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -28,6 +30,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.facebook.CallbackManager
 import com.facebook.login.LoginManager
@@ -36,21 +39,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.Status
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
+import com.google.android.gms.maps.model.Marker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import com.mathgeniusguide.go4lunch.database.RestaurantDao
 import com.mathgeniusguide.go4lunch.database.RestaurantDatabase
+import com.mathgeniusguide.project8.adapter.AutocompleteAdapter
 import com.mathgeniusguide.project8.database.ChatItem
-import com.mathgeniusguide.project8.database.FirebaseCoworkerItem
 import com.mathgeniusguide.project8.database.CoworkerDao
+import com.mathgeniusguide.project8.database.FirebaseCoworkerItem
 import com.mathgeniusguide.project8.database.RestaurantItem
+import com.mathgeniusguide.project8.responses.autocomplete.AutocompleteItem
 import com.mathgeniusguide.project8.util.*
 import com.mathgeniusguide.project8.util.FirebaseFunctions.createCoworker
 import com.mathgeniusguide.project8.util.Functions.coordinateDistance
@@ -60,6 +61,7 @@ import com.mathgeniusguide.project8.viewmodel.PlacesViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener,
     LocationListener {
@@ -69,6 +71,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private val ANONYMOUS = "anonymous"
     private lateinit var locationManager: LocationManager
     val placeList = MutableLiveData<MutableList<RestaurantItem>>()
+    val markerList = emptyList<Marker?>().toMutableList()
+    val autocompleteText = MutableLiveData<String>()
     var chosenPlace: RestaurantItem? = null
     var fetched = false
     var restaurantsLiked = mutableListOf<String>()
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private fun setUpView() {
         // set up layout and toolbar
         setContentView(R.layout.activity_main)
-        autocompleteFragment.view?.visibility = View.GONE
+        autocomplete.visibility = View.GONE
         setSupportActionBar(toolbar)
     }
 
@@ -177,27 +181,52 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     }
 
     private fun setUpAutoComplete() {
-        val autocomplete = autocompleteFragment as AutocompleteSupportFragment
-        Places.initialize(applicationContext, Constants.API_KEY)
-        autocomplete.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
-        autocomplete.setOnPlaceSelectedListener(object: PlaceSelectionListener {
-            override fun onPlaceSelected(place: Place) {
-                // if chosen place already exists in saved list, retrieve data from saved list
-                // if chosen place does not already exist in saved list, fetch data from API
-                if (placeList.value!!.any {it.id == place.id}) {
-                    chosenPlace = placeList.value!!.first {it.id == place.id}
-                    navController.navigate(R.id.load_page_from_map)
-                } else {
-                    autocompleteProgressText.text = String.format(resources.getString(R.string.loading_info_for), place.name)
-                    viewModel.fetchOneDetail(place.id!!)
-                }
-                Log.i(TAG, "Place: " + place.name + ", " + place.id)
+        autocompleteText.postValue("")
+        autocompleteET.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(text: Editable?) {
+
             }
 
-            override fun onError(status: Status) {
-                Log.i(TAG, "An error occurred: " + status)
+            override fun beforeTextChanged(
+                text: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+
+            }
+
+            override fun onTextChanged(text: CharSequence?, start: Int, before: Int, count: Int) {
+                if (text.toString().length >= 3) {
+                    if (autocompleteRV.visibility == View.VISIBLE) {
+                        viewModel.fetchAutocompleteList(
+                            text.toString(),
+                            latitude.value!!,
+                            longitude.value!!,
+                            radius * 2
+                        )
+                    }
+                    autocompleteText.postValue(text.toString())
+                } else {
+                    autocompleteText.postValue("")
+                }
             }
         })
+        autocompleteIV.setOnClickListener {
+            if (autocompleteRV.visibility == View.VISIBLE) {
+                autocompleteRV.visibility = View.GONE
+            } else {
+                autocompleteRV.visibility = View.VISIBLE
+                if (autocompleteET.text.toString().length >= 3) {
+                    viewModel.fetchAutocompleteList(
+                        autocompleteET.text.toString(),
+                        latitude.value!!,
+                        longitude.value!!,
+                        radius * 2
+                    )
+                }
+            }
+        }
     }
 
     private fun setUpLocation() {
@@ -246,24 +275,54 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private fun observeLiveData() {
         viewModel.oneDetail?.observe(this, Observer {
             if (it != null) {
-                chosenPlace = restaurantItemDetails(it.result, latitude.value!!, longitude.value!!, resources)
+                chosenPlace =
+                    restaurantItemDetails(it.result, latitude.value!!, longitude.value!!, resources)
                 placeList.value!!.add(chosenPlace!!)
-                viewModel.insertRestaurantItemIfNotExists(chosenPlace!!.toRestaurantRoomdbItem(resources), this)
+                viewModel.insertRestaurantItemIfNotExists(
+                    chosenPlace!!.toRestaurantRoomdbItem(
+                        resources
+                    ), this
+                )
                 navController.navigate(R.id.load_page_from_map)
             }
         })
         viewModel.savedRestaurants.observe(this, Observer { details ->
-            placeList.postValue(details.map { v -> restaurantItemDetails(v, latitude.value!!, longitude.value!!) }.filter { coordinateDistance(latitude.value!!, longitude.value!!, it.latitude, it.longitude) < radius}.toMutableList())
+            placeList.postValue(details.map { v ->
+                restaurantItemDetails(
+                    v,
+                    latitude.value!!,
+                    longitude.value!!
+                )
+            }.filter {
+                coordinateDistance(
+                    latitude.value!!,
+                    longitude.value!!,
+                    it.latitude,
+                    it.longitude
+                ) < radius
+            }.toMutableList())
         })
-        viewModel.savedCoworkers.observe(this, Observer {list ->
+        viewModel.savedCoworkers.observe(this, Observer { list ->
             for (i in list) {
-                if (firebaseCoworkerList.none {i.id == it.id}) {
+                if (firebaseCoworkerList.none { i.id == it.id }) {
                     firebaseCoworkerList.add(i.toFirebaseCoworkerItem())
                 }
             }
         })
         viewModel.isAutocompleteDataLoading.observe(this, Observer {
             autocompleteProgressScreen.visibility = if (it) View.VISIBLE else View.GONE
+        })
+        viewModel.autocompleteList?.observe(this, Observer {
+            if (it != null) {
+                autocompleteRV.bringToFront()
+                autocompleteRV.layoutManager = LinearLayoutManager(this)
+                autocompleteRV.adapter = AutocompleteAdapter(
+                    it.predictions as ArrayList<AutocompleteItem>,
+                    this,
+                    placeList.value!!,
+                    this
+                )
+            }
         })
     }
 
@@ -291,7 +350,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             // key will return Firebase ID
             firebaseCoworkerItem.id = currentItem.key
             // remove previous entry for this id if it exists
-            firebaseCoworkerList = firebaseCoworkerList.filter {it.id != firebaseCoworkerItem.id} as ArrayList<FirebaseCoworkerItem>
+            firebaseCoworkerList =
+                firebaseCoworkerList.filter { it.id != firebaseCoworkerItem.id } as ArrayList<FirebaseCoworkerItem>
             // get saved data for each coworker
             firebaseCoworkerItem.username = map.get("username") as String?
             firebaseCoworkerItem.restaurant = map.get("restaurant") as String?
@@ -319,12 +379,17 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                 // set up notifications for logged in user
                 setNotificationAlarm(false, notificationTime, username, this)
             } else {
-                userkey = firebaseCoworkerList.first { it.username == username }.id!!
+                userkey = firebaseCoworkerList.first { it.username == username }.id ?: ""
                 restaurantsLiked =
-                    firebaseCoworkerList.first { it.username == username }.liked!!.split(" , ")
+                    (firebaseCoworkerList.first { it.username == username }.liked ?: "").split(" , ")
                         .toMutableList()
                 // set up notifications for logged in user
-                setNotificationAlarm(firebaseCoworkerList.first { it.username == username }.restaurant != "", notificationTime, username, this)
+                setNotificationAlarm(
+                    firebaseCoworkerList.first { it.username == username }.restaurant != "",
+                    notificationTime,
+                    username,
+                    this
+                )
             }
         }
         // get chats data
@@ -338,7 +403,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             // key will return Firebase ID
             chatItem.id = currentItem.key
             // prevent same item from loading repeatedly
-            if (chatList.none {it.id == chatItem.id}) {
+            if (chatList.none { it.id == chatItem.id }) {
                 // get saved data for each chat
                 chatItem.from = map.get("from") as String?
                 chatItem.to = map.get("to") as String?
@@ -374,17 +439,24 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
     private fun getNearbyPlaces(lat: Double, lng: Double) {
         // load saved IDs from database
-        restaurantDao!!.selectIds().observeOnce(this, Observer {
+        restaurantDao?.selectIds()?.observeOnce(this, Observer {
             val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
             val now = sdf.format(Date())
             if (it != null) {
                 // ignore IDs that are not within the radius
-                val nearby = it.filter {restaurant -> coordinateDistance(lat, lng, restaurant.latitude!!, restaurant.longitude!!) < radius}
+                val nearby = it.filter { restaurant ->
+                    coordinateDistance(
+                        lat,
+                        lng,
+                        restaurant.latitude ?: 0.0,
+                        restaurant.longitude ?: 0.0
+                    ) < radius
+                }
                 // separate saved IDs by expiration date, recentIds = expiration has not passed, expiredIds = expiration has passed
                 // fetch places from API using location and saved IDs
-                val recentIds = nearby.filter {v -> v.expiration > now}.map {v -> v.id}
-                val expiredIds = nearby.filter {v -> v.expiration <= now}.map {v -> v.id}
-                viewModel.fetchPlaces(lat, lng, radius, recentIds, expiredIds,this)
+                val recentIds = nearby.filter { v -> v.expiration > now }.map { v -> v.id }
+                val expiredIds = nearby.filter { v -> v.expiration <= now }.map { v -> v.id }
+                viewModel.fetchPlaces(lat, lng, radius, recentIds, expiredIds, this)
             }
         })
     }
@@ -412,10 +484,12 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         when (item.itemId) {
             R.id.search -> {
                 toolbar.visibility = View.GONE
-                autocompleteFragment.view?.visibility = View.VISIBLE
+                autocomplete.visibility = View.VISIBLE
                 return true
             }
-            else -> return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+            else -> return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(
+                item
+            )
         }
     }
 
@@ -457,13 +531,13 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         firebaseUser = null
         photoUrl = ""
         // delete chats from this session, they will be reloaded from firebase
-        chatList = chatList.filter {it.id != ""} as ArrayList<ChatItem>
+        chatList = chatList.filter { it.id != "" } as ArrayList<ChatItem>
         // navigate to login fragment
         // make toolbars invisible
         navController.navigate(R.id.action_logout)
         tabs.visibility = View.GONE
         toolbar.visibility = View.GONE
-        autocompleteFragment.view?.visibility = View.GONE
+        autocomplete.visibility = View.GONE
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
@@ -529,15 +603,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         super.onActivityResult(requestCode, resultCode, data)
         val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
         if (result != null) {
-            if (result.isSuccess) {
+            if (result.isSuccess && result.signInAccount != null) {
                 // Google Sign-In was successful, authenticate with Firebase
                 firebaseAuthWithGoogle(result.signInAccount!!)
             } else {
                 // Google Sign-In failed
                 Log.e(TAG, "Google Sign-In failed.")
             }
-        } else if (callbackManager != null){
-            callbackManager!!.onActivityResult(requestCode, resultCode, data)
+        } else {
+            callbackManager?.onActivityResult(requestCode, resultCode, data)
         }
     }
 

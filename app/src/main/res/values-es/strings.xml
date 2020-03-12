@@ -1,7 +1,7 @@
 <resources>
 	<string name="app_name">Go4Lunch</string>
 
-	<!--navigation items-->
+	<!--navigation predictions-->
 	<string name="logout">Cierre Sesión</string>
 	<string name="settings">Configuraciones</string>
 	<string name="instructions">Instrucciones</string>

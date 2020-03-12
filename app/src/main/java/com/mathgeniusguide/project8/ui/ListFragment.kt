@@ -5,19 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.adapter.PlaceAdapter
+import com.mathgeniusguide.project8.database.RestaurantItem
 import com.mathgeniusguide.project8.util.Constants
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.list_fragment.*
+import java.util.*
 
-class ListFragment: Fragment() {
+class ListFragment : Fragment() {
     lateinit var act: MainActivity
+    lateinit var sortedList: List<RestaurantItem>
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.list_fragment, container, false)
     }
@@ -30,7 +38,8 @@ class ListFragment: Fragment() {
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
         // hide autocomplete until search button clicked
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -49,7 +58,7 @@ class ListFragment: Fragment() {
             val orderBy = pref?.getInt("orderBy", Constants.BY_DISTANCE) ?: Constants.BY_DISTANCE
 
             // sort restaurants by order chosen in settings, with liked restaurants first
-            val sortedList = when (orderBy) {
+            sortedList = when (orderBy) {
                 Constants.BY_RATING -> placeList.sortedByDescending { it.rating }
                 Constants.BY_WORKMATES -> placeList.sortedByDescending { it.workmates }
                 Constants.BY_NAME -> placeList.sortedBy { it.name }
@@ -59,5 +68,21 @@ class ListFragment: Fragment() {
             // set up RecyclerView
             listViewRV.adapter = PlaceAdapter(sortedList, context!!, findNavController())
         }
+
+        // filter list when searched
+        act.autocompleteText.observe(viewLifecycleOwner, Observer {
+            // if search string empty, show all
+            // if search string not empty, show only those with matching names
+            listViewRV.adapter =
+                PlaceAdapter(if (it.isEmpty()) sortedList else sortedList.filter { item ->
+                    item.name.toLowerCase(
+                        Locale.getDefault()
+                    ).contains(
+                        it.toLowerCase(
+                            Locale.getDefault()
+                        )
+                    )
+                }, context!!, findNavController())
+        })
     }
 }

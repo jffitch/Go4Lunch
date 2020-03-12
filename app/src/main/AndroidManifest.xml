@@ -45,10 +45,6 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <service
-                android:name=".util.NotificationJobService"
-                android:exported="false"
-                android:permission="android.permission.BIND_JOB_SERVICE" />
         <meta-data
                 android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyCxO2W64GUFK8LPq-YGgzWEI6OFtB5q0-Q" />

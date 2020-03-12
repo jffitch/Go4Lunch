@@ -101,12 +101,12 @@ fun CoworkerRoomdbItem.toFirebaseCoworkerItem(): FirebaseCoworkerItem {
 // convert Firebase coworker item to Room Database coworker item
 fun FirebaseCoworkerItem.toCoworkerRoomdbItem(): CoworkerRoomdbItem {
     val item = CoworkerRoomdbItem(
-        id = this.id!!,
-        liked = this.liked!!,
-        photo = this.photo!!,
-        restaurant = this.restaurant!!,
-        restaurantname = this.restaurantName!!,
-        username = this.username!!
+        id = this.id ?: "",
+        liked = this.liked,
+        photo = this.photo,
+        restaurant = this.restaurant,
+        restaurantname = this.restaurantName,
+        username = this.username
     )
     return item
 }

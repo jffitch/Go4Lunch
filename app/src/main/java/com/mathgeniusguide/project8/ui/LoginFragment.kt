@@ -50,7 +50,8 @@ class LoginFragment : Fragment() {
         // toolbar invisible
         act.toolbar.visibility = View.GONE
         // hide autocomplete
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
         // enable Google Sign In Button
         googleButton.setOnClickListener {
             startActivityForResult(

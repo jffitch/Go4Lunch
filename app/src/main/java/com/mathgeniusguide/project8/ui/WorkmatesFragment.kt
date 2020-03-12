@@ -41,6 +41,7 @@ class WorkmatesFragment: Fragment() {
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
         // hide autocomplete until search button clicked
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
     }
 }

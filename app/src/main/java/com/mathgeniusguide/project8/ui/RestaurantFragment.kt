@@ -49,7 +49,8 @@ class RestaurantFragment: Fragment() {
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
         // hide autocomplete until search button clicked
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
         // chosenPlace will be set in MainActivity whenever navigation to this fragment happens, load that restaurant
         val chosenPlace = act.chosenPlace!!
         // load list of coworkers eating at this restaurant

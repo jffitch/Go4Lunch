@@ -14,6 +14,7 @@ import com.mathgeniusguide.project8.connectivity.ConnectivityInterceptor
 import com.mathgeniusguide.project8.connectivity.NoConnectivityException
 import com.mathgeniusguide.project8.database.CoworkerDao
 import com.mathgeniusguide.project8.database.CoworkerRoomdbItem
+import com.mathgeniusguide.project8.responses.autocomplete.AutocompleteResponse
 import com.mathgeniusguide.project8.util.toRestaurantRoomdbItem
 import com.mathgeniusguide.project8.responses.details.DetailsResponse
 import com.mathgeniusguide.project8.util.Constants
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 class PlacesViewModel(application: Application) : AndroidViewModel(application) {
     // declare MutableLiveData variables for use in this class
     private val placeList = mutableListOf<String>()
+    private val _autocompleteList: MutableLiveData<AutocompleteResponse?>? = MutableLiveData()
     private val _detailsCount = MutableLiveData<Int>()
     private val _detailsProgress = MutableLiveData<Int>()
     private val _oneDetail: MutableLiveData<DetailsResponse?>? = MutableLiveData()
@@ -51,6 +53,8 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
         get() = _isDataLoading
     val isAutocompleteDataLoading: LiveData<Boolean>
         get() = _isAutocompleteDataLoading
+    val autocompleteList: LiveData<AutocompleteResponse?>?
+        get() = _autocompleteList
     val isDataLoadingError: LiveData<Boolean>
         get() = _isDataLoadingError
     val savedRestaurants: LiveData<List<RestaurantRoomdbItem>>
@@ -119,6 +123,22 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
                 }
                 // after adding each item to database, fetch all data from database
                 fetchSavedRestaurants(getApplication<Application>().applicationContext)
+                _isDataLoading.postValue(false)
+                _isDataLoadingError.postValue(false)
+            } catch (e: NoConnectivityException) {
+                _isDataLoading.postValue(false)
+                _isDataLoadingError.postValue(true)
+            }
+        }
+    }
+
+    // fetch autocomplete list
+    fun fetchAutocompleteList(input: String, latitude: Double, longitude: Double, radius: Int) {
+        val connectivityInterceptor = ConnectivityInterceptor(getApplication())
+        _isDataLoading.value = true
+        viewModelScope.launch {
+            try {
+                _autocompleteList?.postValue(Api.invoke(connectivityInterceptor).getAutocompleteList("${latitude},${longitude}", radius, input).body())
                 _isDataLoading.postValue(false)
                 _isDataLoadingError.postValue(false)
             } catch (e: NoConnectivityException) {

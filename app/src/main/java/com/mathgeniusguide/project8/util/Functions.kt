@@ -168,10 +168,10 @@ object Functions {
     fun restaurantItemDetails(result: RestaurantRoomdbItem, latitude: Double, longitude: Double): RestaurantItem {
         val restaurantItem = RestaurantItem()
         restaurantItem.id = result.id
-        restaurantItem.address = result.address!!
+        restaurantItem.address = result.address ?: ""
         restaurantItem.phone = result.phone
-        restaurantItem.latitude = result.latitude!!
-        restaurantItem.longitude = result.longitude!!
+        restaurantItem.latitude = result.latitude ?: 0.0
+        restaurantItem.longitude = result.longitude ?: 0.0
         // use distance formula to calculate distance from current and destination locations
         restaurantItem.distance = coordinateDistance(
             latitude,
@@ -180,10 +180,10 @@ object Functions {
             restaurantItem.longitude
         )
         restaurantItem.website = result.website
-        restaurantItem.name = result.name!!
-        restaurantItem.rating = result.rating!!
-        restaurantItem.time = result.time!!
-        restaurantItem.image = result.image!!
+        restaurantItem.name = result.name ?: ""
+        restaurantItem.rating = result.rating ?: 0.0
+        restaurantItem.time = result.time ?: ""
+        restaurantItem.image = result.image ?: ""
         return restaurantItem
     }
 

@@ -1,6 +1,7 @@
 package com.mathgeniusguide.project8.api
 
 import com.mathgeniusguide.project8.connectivity.ConnectivityInterceptor
+import com.mathgeniusguide.project8.responses.autocomplete.AutocompleteResponse
 import com.mathgeniusguide.project8.responses.details.DetailsResponse
 import com.mathgeniusguide.project8.responses.place.PlaceResponse
 import com.mathgeniusguide.project8.util.Constants
@@ -28,6 +29,12 @@ interface Api {
     suspend fun getDetails(
         @Query("place_id") placeId: String,
         @Query("fields") fields: String): Response<DetailsResponse>
+
+    @GET("autocomplete/json")
+    suspend fun getAutocompleteList(
+        @Query("location") location: String,
+        @Query("radius") radius: Int,
+        @Query("input") input: String ): Response<AutocompleteResponse>
 
     companion object {
         operator fun invoke(

@@ -37,12 +37,22 @@ class ChatFragment : Fragment() {
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
         // hide autocomplete until search button clicked
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
 
         // set up chat RecyclerView, chats ordered by timestamp
         chatRV.layoutManager = LinearLayoutManager(context)
-        chatList = act.chatList.filter { (it.from == act.userkey && it.to == act.chattingWith) || (it.from == act.chattingWith && it.to == act.userkey)}.sortedBy { it.timestamp }.toMutableList()
-        chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.firebaseCoworkerList.first { it.id == act.chattingWith }.photo, resources)
+        chatList =
+            act.chatList.filter { (it.from == act.userkey && it.to == act.chattingWith) || (it.from == act.chattingWith && it.to == act.userkey) }
+                .sortedBy { it.timestamp }.toMutableList()
+        chatRV.adapter = ChatAdapter(
+            chatList,
+            context!!,
+            act.userkey,
+            act.photoUrl,
+            act.firebaseCoworkerList.first { it.id == act.chattingWith }.photo,
+            resources
+        )
 
         sendButton.setOnClickListener {
             // receive chat message and clear field
@@ -64,7 +74,14 @@ class ChatFragment : Fragment() {
             createChat(act.userkey, act.chattingWith, text, act.database)
             // set up chat RecyclerView, chats ordered by timestamp
             chatList.sortBy { it.timestamp }
-            chatRV.adapter = ChatAdapter(chatList, context!!, act.userkey, act.photoUrl, act.firebaseCoworkerList.first { it.id == act.chattingWith }.photo, resources)
+            chatRV.adapter = ChatAdapter(
+                chatList,
+                context!!,
+                act.userkey,
+                act.photoUrl,
+                act.firebaseCoworkerList.first { it.id == act.chattingWith }.photo,
+                resources
+            )
         }
     }
 }

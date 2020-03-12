@@ -16,11 +16,13 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.mathgeniusguide.project8.MainActivity
 import com.mathgeniusguide.project8.R
 import com.mathgeniusguide.project8.database.RestaurantItem
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.map_fragment.*
+import java.util.*
 
 class MapFragment: Fragment(), OnMapReadyCallback {
     var googleMap: GoogleMap? = null
@@ -42,18 +44,16 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         act.toolbar.visibility = View.VISIBLE
         act.toolbar.setNavigationIcon(R.drawable.drawer)
         // hide autocomplete until search button clicked
-        act.autocompleteFragment.view?.visibility = View.GONE
+        act.autocomplete.visibility = View.GONE
+        act.autocompleteRV.visibility = View.GONE
         // set up Google map
-        if (map != null) {
-            map.onCreate(null)
-            map.onResume()
-            map.getMapAsync(this)
-        }
+        map?.onCreate(null)
+        map?.onResume()
+        map?.getMapAsync(this)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        //
         act.latitude.observe(viewLifecycleOwner, Observer {
             if (googleMap != null && latitude == 91.0 && it != null) {
                 latitude = it
@@ -92,6 +92,17 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         act.viewModel.detailsProgress.observe(viewLifecycleOwner, Observer {
             progressCounter.text = "${it}/${act.viewModel.detailsCount.value}"
         })
+
+        // filter markers when searched
+        act.autocompleteText.observe(viewLifecycleOwner, Observer {
+            // if search string empty, show all
+            // if search string not empty, show only those with matching names
+            for (i in act.markerList) {
+                if (i != null) {
+                    i.isVisible = it.isEmpty() || i.title.toLowerCase(Locale.getDefault()).contains(it.toLowerCase(Locale.getDefault()))
+                }
+            }
+        })
     }
 
     // create markers for Google map
@@ -99,11 +110,13 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         var coord: LatLng? = null
         var title = ""
         var pos: CameraPosition? = null
+        var marker: Marker?
         for (place in list) {
             coord = LatLng(place.latitude, place.longitude)
             title = place.name
-            googleMap!!.addMarker(MarkerOptions().icon(bitmapDescriptorFromVector(context!!, R.drawable.your_lunch))
+            marker = googleMap?.addMarker(MarkerOptions().icon(bitmapDescriptorFromVector(context!!, R.drawable.your_lunch))
                 .position(coord).title(title))
+            act.markerList.add(marker)
         }
     }
 
@@ -122,7 +135,7 @@ class MapFragment: Fragment(), OnMapReadyCallback {
         MapsInitializer.initialize(context)
         googleMap = p0
         // when marker is clicked, go to restaurant page for that restaurant
-        googleMap!!.setOnInfoWindowClickListener {marker->
+        googleMap?.setOnInfoWindowClickListener {marker->
             val placeList = act.placeList.value
             // to determine which restaurant corresponds to each marker, find restaurant with latitude and longitude that match the marker
             if (placeList != null && placeList.any{it.latitude == marker.position.latitude && it.longitude == marker.position.longitude}) {
@@ -134,12 +147,16 @@ class MapFragment: Fragment(), OnMapReadyCallback {
 
     // if location sensor has retrieved both latitude and longitude values, go to location on map
     fun setLocation(lat: Double, lng: Double) {
-        if (googleMap != null && lat != 91.0 && lng != 181.0) {
+        if (lat != 91.0 && lng != 181.0) {
             val coord = LatLng(lat, lng)
-            googleMap!!.mapType = GoogleMap.MAP_TYPE_NORMAL
-            googleMap!!.addMarker(MarkerOptions().position(coord).title(resources.getString(R.string.you_are_here)))
-            val pos = CameraPosition.builder().target(coord).zoom(16.toFloat()).bearing(0.toFloat()).tilt(45.toFloat()).build()
-            googleMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
+            googleMap?.apply {
+                this.mapType = GoogleMap.MAP_TYPE_NORMAL
+                this.addMarker(MarkerOptions().position(coord).title(resources.getString(R.string.you_are_here)))
+                val pos =
+                    CameraPosition.builder().target(coord).zoom(16.toFloat()).bearing(0.toFloat())
+                        .tilt(45.toFloat()).build()
+                this.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
+            }
         }
     }
 }
